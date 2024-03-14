@@ -1,0 +1,52 @@
+# Copyright 2024 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+kind: Model
+metadata:
+  name: Safety
+spec:
+  runtime:
+    dynlib:
+      - os: linux
+        arch: amd64
+        path: models/safety/lib/safety.so
+  channels:
+    - alias: model
+      selectors:
+        channel: model_vector
+    - alias: physical
+      selectors:
+        channel: physical_vector
+    - alias: vehicle
+      selectors:
+        channel: vehicle_vector
+---
+kind: SignalGroup
+metadata:
+  name: model
+  labels:
+    channel: model_vector
+spec:
+  signals:
+    - signal: BrakePedalFault
+---
+kind: SignalGroup
+metadata:
+  name: physical
+  labels:
+    channel: physical_vector
+spec:
+  signals:
+    - signal: BrakePedalPos_AC
+---
+kind: SignalGroup
+metadata:
+  name: vehicle
+  labels:
+    channel: vehicle_vector
+spec:
+  signals:
+    - signal: CheckEngineSet
+    - signal: CheckEngineClear

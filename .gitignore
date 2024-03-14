@@ -1,5 +1,11 @@
 build
 dse/__oss__
+extra/tools/*/bin
+!extra/tools/*/build
+extra/tools/*/build/stage
+
+.task
+
 
 # Prerequisites
 *.d

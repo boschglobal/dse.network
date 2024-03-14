@@ -1,0 +1,114 @@
+---
+kind: Stack
+metadata:
+  name: brake-by-wire
+spec:
+  connection:
+    transport:
+      redispubsub:
+        uri: redis://localhost:6379
+        timeout: 60
+  runtime:
+    env:
+      SIMBUS_LOGLEVEL: 3
+  models:
+    - name: simbus
+      model:
+        name: simbus
+      channels:
+        - name: hmi
+          expectedModelCount: 2
+        - name: model
+          expectedModelCount: 2
+        - name: network
+          expectedModelCount: 2
+        - name: physical
+          expectedModelCount: 4
+        - name: vehicle
+          expectedModelCount: 3
+        - name: wire
+          expectedModelCount: 2
+    - name: brake
+      uid: 101
+      model:
+        name: Brake
+      channels:
+        - name: model
+          alias: model
+        - name: physical
+          alias: physical
+        - name: wire
+          alias: wire
+    - name: driver
+      uid: 102
+      model:
+        name: Driver
+      channels:
+        - name: hmi
+          alias: hmi
+        - name: vehicle
+          alias: vehicle
+    - name: pedal
+      uid: 103
+      model:
+        name: Pedal
+      channels:
+        - name: hmi
+          alias: hmi
+        - name: physical
+          alias: physical
+        - name: wire
+          alias: wire
+    - name: safety
+      uid: 104
+      model:
+        name: Safety
+      channels:
+        - name: model
+          alias: model
+        - name: physical
+          alias: physical
+        - name: vehicle
+          alias: vehicle
+    - name: net_brake
+      uid: 201
+      model:
+        name: Network
+      runtime:
+        files:
+          - networks/brake/network.yaml
+          - networks/brake/signalgroup.yaml
+      metadata:
+        network: brake
+      channels:
+        - name: physical
+          alias: signal_channel
+          selectors:
+            channel: signal_vector
+        - name: network
+          alias: network_channel
+          selectors:
+            channel: network_vector
+    - name: net_vehicle
+      uid: 202
+      model:
+        name: Network
+      runtime:
+        files:
+          - networks/vehicle/network.yaml
+          - networks/vehicle/signalgroup.yaml
+      metadata:
+        network: vehicle
+      channels:
+        - name: vehicle
+          alias: signal_channel
+          selectors:
+            channel: signal_vector
+        - name: network
+          alias: network_channel
+          selectors:
+            channel: network_vector
+---
+kind: Model
+metadata:
+  name: simbus

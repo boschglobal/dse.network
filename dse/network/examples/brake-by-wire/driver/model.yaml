@@ -1,0 +1,42 @@
+# Copyright 2024 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+kind: Model
+metadata:
+  name: Driver
+spec:
+  runtime:
+    dynlib:
+      - os: linux
+        arch: amd64
+        path: models/driver/lib/driver.so
+  channels:
+    - alias: hmi
+      selectors:
+        channel: hmi_vector
+    - alias: vehicle
+      selectors:
+        channel: vehicle_vector
+---
+kind: SignalGroup
+metadata:
+  name: hmi
+  labels:
+    channel: hmi_vector
+spec:
+  signals:
+    - signal: BrakePedalPos
+    - signal: BrakePedalForce
+    - signal: CheckEngine
+---
+kind: SignalGroup
+metadata:
+  name: vehicle
+  labels:
+    channel: vehicle_vector
+spec:
+  signals:
+    - signal: CheckEngineSet
+    - signal: CheckEngineClear

@@ -1,0 +1,193 @@
+
+
+
+version: '3'
+
+vars:
+  NETWORK_IMAGE: network
+  NETWORK_TAG: test
+  GCC_IMAGE: ghcr.io/boschglobal/dse-gcc-builder
+  GCC_TAG: main
+
+tasks:
+  generate:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:generate-{{.DBCFILE}}
+    vars:
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      DBCDIR:
+        sh: dirname {{.DBCFILE}}
+      OUTDIR: '{{default .DBCDIR .OUTDIR}}'
+      FUNCTION_LIB: '{{.FUNCTION_PATCH | default ""}}'
+      FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
+      SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
+      REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
+    cmds:
+      - task: gen-code
+        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+      - task: build-message-lib
+        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+      - task: gen-network
+        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+      - task: patch-network
+        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+      - task: gen-signalgroup
+        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}', SIGNAL: '{{.SIGNAL}}', MIMETYPE: '"{{.MIMETYPE}}"' }
+    requires:
+      vars: [DBCFILE, SIGNAL, MIMETYPE]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+    generates:
+      - '{{.PWD}}/{{.OUTDIR}}/**'
+
+  gen-code:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:gen-code-{{.DBCFILE}}
+    vars:
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      DBCNAME:
+        sh: basename {{.DBCFILE}} .dbc
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-code {{.DBCFILE}} {{.OUTDIR}}
+    requires:
+      vars: [DBCFILE, OUTDIR]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+    generates:
+      - '{{.PWD}}/{{.OUTDIR}}/{{.DBCNAME}}.h'
+      - '{{.PWD}}/{{.OUTDIR}}/{{.DBCNAME}}.c'
+      - '{{.PWD}}/{{.OUTDIR}}/{{.DBCNAME}}.yaml'
+
+  build-message-lib:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:build-message-lib-{{.DBCFILE}}
+    vars:
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      DBCNAME:
+        sh: basename {{.DBCFILE}} .dbc
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      MESSAGE_LIB: '{{.MESSAGE_LIB | default "message.so"}}'
+      SOURCE_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.c'
+      OBJECT_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.o'
+      MESSAGE_LIB_FILE: '{{.OUTDIR}}/{{.MESSAGE_LIB}}'
+      IMAGE: '{{.IMAGE | default .GCC_IMAGE}}'
+      TAG: '{{.TAG | default .GCC_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
+          gcc -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
+      - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
+          gcc -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
+    requires:
+      vars: [DBCFILE, OUTDIR]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+      - '{{.PWD}}/{{.SOURCE_FILE}}'
+    generates:
+      - '{{.PWD}}/{{.MESSAGE_LIB_FILE}}'
+
+  gen-network:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:gen-network-{{.DBCFILE}}
+    vars:
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      DBCNAME:
+        sh: basename {{.DBCFILE}} .dbc
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      NETWORK_FILE: '{{.OUTDIR}}/network.yaml'
+      HEADER_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.h'
+      METADATA_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.yaml'
+      MESSAGE_LIB: '{{.MESSAGE_LIB | default "message.so"}}'
+      FUNCTION_LIB: '{{if .FUNCTION_LIB}}--function_lib {{.FUNCTION_LIB}}{{else}}{{end}}'
+      LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
+      ANNOTATIONS: '{{if .ANNOTATIONS}}--annotations {{.ANNOTATIONS}}{{else}}{{end}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-network
+          --name {{.DBCNAME}}
+          --header {{.HEADER_FILE}}
+          --network {{.NETWORK_FILE}}
+          --metadata {{.METADATA_FILE}}
+          --message_lib {{.OUTDIR}}/{{.MESSAGE_LIB}}
+          {{.FUNCTION_LIB}}
+          {{.LABELS}}
+          {{.ANNOTATIONS}}
+    requires:
+      vars: [DBCFILE, OUTDIR]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+      - '{{.PWD}}/{{.HEADER_FILE}}'
+      - '{{.PWD}}/{{.METADATA_FILE}}'
+    generates:
+      - '{{.PWD}}/{{.NETWORK_FILE}}'
+
+  patch-network:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:patch-network-{{.DBCFILE}}
+    vars:
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      NETWORK_FILE: '{{.OUTDIR}}/network.yaml'
+      FUNCTION_PATCH: '{{if .FUNCTION_PATCH}}--function_patch {{.FUNCTION_PATCH}}{{else}}{{end}}'
+      SIGNAL_PATCH: '{{if .SIGNAL_PATCH}}--signal_patch {{.SIGNAL_PATCH}}{{else}}{{end}}'
+      REMOVE_UNKNOWN: '{{if .REMOVE_UNKNOWN}}--remove_unknown{{else}}{{end}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - if test -n '{{.FUNCTION_PATCH}}' || test -n '{{.SIGNAL_PATCH}}' ; then
+          docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} patch-network
+            --network {{.NETWORK_FILE}}
+            {{.FUNCTION_PATCH}}
+            {{.SIGNAL_PATCH}}
+            {{.REMOVE_UNKNOWN}}
+        ; else echo "patch-network skipped"; fi
+    requires:
+      vars: [DBCFILE, OUTDIR]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+      - '{{.PWD}}/{{.NETWORK_FILE}}'
+    generates:
+      - '{{.PWD}}/{{.NETWORK_FILE}}'
+
+  gen-signalgroup:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:gen-signalgroup-{{.DBCFILE}}
+    vars:
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      DBCNAME:
+        sh: basename {{.DBCFILE}} .dbc
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      NETWORK_FILE: '{{.OUTDIR}}/network.yaml'
+      SIGGROUP_FILE: '{{.OUTDIR}}/signalgroup.yaml'
+      LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
+
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-signalgroup
+          --name {{.DBCNAME}}
+          --network {{.NETWORK_FILE}}
+          --signalgroup {{.SIGGROUP_FILE}}
+          --signal {{.SIGNAL}}
+          --mimetype {{.MIMETYPE}}
+          {{.LABELS}}
+    requires:
+      vars: [DBCFILE, OUTDIR, SIGNAL, MIMETYPE]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+      - '{{.PWD}}/{{.NETWORK_FILE}}'
+    generates:
+      - '{{.PWD}}/{{.SIGGROUP_FILE}}'

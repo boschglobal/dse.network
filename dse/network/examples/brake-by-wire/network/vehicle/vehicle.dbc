@@ -1,0 +1,18 @@
+VERSION ""
+
+BS_:
+
+BU_: PCM1 Vehicle
+
+BO_ 400 EngineStatus: 2 ECU
+ SG_ CheckEngineSet : 7|8@0- (1,0) [0|255] ""  HMI
+ SG_ CheckEngineClear : 15|8@0- (1,0) [0|255] ""  HMI
+
+BA_DEF_ BO_ "GenMsgSendType" ENUM "cyclicAndTriggered";
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;
+BA_DEF_DEF_ "BusType" "CAN";
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_DEF_DEF_ "GenMsgDelayTime" 0;
+
+BA_ "GenMsgSendType" BO_ 400 0;
+BA_ "GenMsgCycleTime" BO_ 400 20;

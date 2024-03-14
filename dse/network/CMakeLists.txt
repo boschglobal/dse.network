@@ -30,6 +30,8 @@ list(APPEND C_CXX_WARNING_FLAGS
 )
 add_compile_options(${C_CXX_WARNING_FLAGS})
 add_compile_definitions(DLL_BUILD)
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
+
 
 
 # External Project - DSE C Lib
@@ -97,13 +99,19 @@ target_include_directories(network
         ../..
 )
 install(TARGETS network)
-
 install(
     FILES
         model.yaml
     DESTINATION
         data
 )
+install(
+    DIRECTORY
+        ../../licenses
+    DESTINATION
+        licenses
+)
+
 
 
 # Package

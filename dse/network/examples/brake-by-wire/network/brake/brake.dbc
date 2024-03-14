@@ -1,0 +1,23 @@
+VERSION ""
+
+BS_:
+
+BU_: PCM1 Brake
+
+BO_ 500 PedalStatus: 2 Pedal
+ SG_ BrakePedalPos : 7|8@0- (1000,0) [0|1] ""  ECU
+ SG_ BrakePedalPos_AC : 15|8@0- (1,0) [0|255] ""  ECU
+
+BO_ 501 BrakeStatus: 1 ECU
+ SG_ BrakeForce : 7|8@0- (1000,0) [0|1] ""  Pedal
+
+BA_DEF_ BO_ "GenMsgSendType" ENUM "cyclicAndTriggered";
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;
+BA_DEF_DEF_ "BusType" "CAN";
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_DEF_DEF_ "GenMsgDelayTime" 0;
+
+BA_ "GenMsgSendType" BO_ 500 0;
+BA_ "GenMsgCycleTime" BO_ 500 10;
+BA_ "GenMsgSendType" BO_ 501 0;
+BA_ "GenMsgCycleTime" BO_ 501 10;

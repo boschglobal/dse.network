@@ -30,6 +30,11 @@ export MODELC_SANDBOX_DIR ?= $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_deps/
 
 
 ###############
+## Tools (Container Images).
+TOOL_DIRS = network
+
+
+###############
 ## Package parameters.
 export PACKAGE_VERSION ?= 0.0.2
 DIST_DIR := $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_dist
@@ -67,6 +72,16 @@ build:
 package:
 	@${DOCKER_BUILDER_CMD} $(MAKE) do-package
 
+.PHONY: tools
+tools:
+	for d in $(TOOL_DIRS) ;\
+	do \
+		mkdir -p extra/tools/$$d/build/stage ;\
+		cp -r licenses -t extra/tools/$$d/build/stage ;\
+		docker build -f extra/tools/$$d/build/package/Dockerfile \
+				--tag $$d:test extra/tools/$$d ;\
+	done;
+
 do-test_cmocka-build:
 	$(MAKE) -C tests/cmocka build
 
@@ -85,10 +100,9 @@ test: test_cmocka
 .PHONY: clean
 clean:
 	@${DOCKER_BUILDER_CMD} $(MAKE) do-clean
-	for d in $(DOCKER_IMAGES) ;\
+	for d in $(TOOL_DIRS) ;\
 	do \
-		docker images -q $(DOCKER_PREFIX)-$$d | xargs -r docker rmi -f ;\
-		docker images -q */*/$(DOCKER_PREFIX)-$$d | xargs -r docker rmi -f ;\
+		rm -rf extra/tools/$$d/build/stage ;\
 	done;
 	docker images -qf dangling=true | xargs -r docker rmi
 

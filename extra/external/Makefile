@@ -1,3 +1,9 @@
+# Copyright 2024 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+export EXTERNAL_BUILD_DIR ?= /dev/null
+
 
 default: build
 
@@ -17,7 +23,6 @@ build:
 
 oss:
 	if [ ! -d "build" ]; then make setup; fi
-	cd build; cmake -DCMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) ..
 	cd build; make oss
 
 clean:

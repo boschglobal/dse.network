@@ -1,0 +1,53 @@
+# Copyright 2024 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+kind: Model
+metadata:
+  name: Pedal
+spec:
+  runtime:
+    dynlib:
+      - os: linux
+        arch: amd64
+        path: models/pedal/lib/pedal.so
+  channels:
+    - alias: hmi
+      selectors:
+        channel: hmi_vector
+    - alias: physical
+      selectors:
+        channel: physical_vector
+    - alias: wire
+      selectors:
+        channel: wire_vector
+---
+kind: SignalGroup
+metadata:
+  name: hmi
+  labels:
+    channel: hmi_vector
+spec:
+  signals:
+    - signal: BrakePedalPos
+    - signal: BrakePedalForce
+---
+kind: SignalGroup
+metadata:
+  name: physical
+  labels:
+    channel: physical_vector
+spec:
+  signals:
+    - signal: BrakePedalPos
+    - signal: BrakeForce
+---
+kind: SignalGroup
+metadata:
+  name: wire
+  labels:
+    channel: wire_vector
+spec:
+  signals:
+    - signal: BrakePedal

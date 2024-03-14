@@ -77,10 +77,3 @@ install(
     DESTINATION
         ${MODEL_PATH}/data
 )
-
-install(
-    FILES
-        ../../model.yaml
-    DESTINATION
-        data
-)
