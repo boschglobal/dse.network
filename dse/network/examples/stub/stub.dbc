@@ -1,0 +1,54 @@
+VERSION ""
+
+BS_:
+
+BU_: PCM1 DSE_Network
+
+BO_ 496 ExampleMessage: 8 PCM1
+ SG_ Temperature : 0|12@0- (0.01,250) [229.52|270.47] "degK"  DSE_Network
+ SG_ AverageRadius : 6|6@0+ (0.1,0) [0|5] "m" DSE_Network
+ SG_ Enable : 7|1@0+ (1,0) [0|0] "-" DSE_Network
+
+BO_ 497 ExampleMessage2: 8 PCM1
+ SG_ Radius : 6|6@0+ (0.1,0) [0|5] "m" DSE_Network
+
+BO_ 498 FunctionExample: 8 PCM1
+SG_ Crc   : 0|8@1+  (1,0) [0|0] "" DSE_Network
+SG_ Alive : 8|8@1+  (1,0) [0|0] "" DSE_Network
+SG_ Foo   : 16|8@1+ (1,0) [0|0] "" DSE_Network
+SG_ Bar   : 24|8@1+ (1,0) [0|0] "" DSE_Network
+
+BO_ 499 UnsignedTypes: 16 PCM1
+ SG_ UInt8Signal : 0|8@0+ (1,0) [0|250] "uint8" DSE_Network
+ SG_ UInt16Signal : 8|16@0+ (1,0) [0|1000] "uint16" DSE_Network
+ SG_ UInt32Signal : 24|32@0+ (1,0) [0|40000] "uint32" DSE_Network
+ SG_ UInt64Signal : 56|64@0+ (1,0) [0|800000] "uint64" DSE_Network
+
+BO_ 500 SignedTypes: 16 PCM1
+ SG_ Int8Signal : 0|8@0- (1,0) [-128|127] "int8" DSE_Network
+ SG_ Int16Signal : 8|16@0- (1,0) [-2501|2500] "int16" DSE_Network
+ SG_ Int32Signal : 24|32@0- (1,0) [-210001|210000] "int32" DSE_Network
+ SG_ Int64Signal : 56|64@0- (1,0) [-900001|900000] "int64" DSE_Network
+
+BO_ 501 FloatTypes: 16 PCM1
+ SG_ DoubleSignal : 0|64@1- (1,0) [0|0] "" DSE_Network
+ SG_ FloatSignal : 64|32@1- (1,0) [0|0] "" DSE_Network
+
+BO_ 502 ScheduledMessage: 8 PCM1
+ SG_ ScheduleSignal : 0|1@0+ (1,0) [0|0] "-" DSE_Network
+
+BA_DEF_ "BusID" INT 0 0;
+BA_DEF_ BO_ "GenMsgSendType" ENUM "cyclicAndTriggered";
+BA_DEF_DEF_ "BusType" "CAN";
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_DEF_DEF_ "GenMsgDelayTime" 0;
+
+BA_ "BusID" 4;
+BA_ "GenMsgSendType" BO_ 502 0;
+BA_ "GenMsgCycleTime" BO_ 502 10;
+
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+
+SIG_VALTYPE_ 500 DoubleSignal : 2;
+SIG_VALTYPE_ 500 FloatSignal : 1;

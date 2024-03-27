@@ -1,0 +1,17 @@
+---
+kind: Model
+metadata:
+  name: Network
+spec:
+  runtime:
+    dynlib:
+      - os: linux
+        arch: amd64
+        path: lib/network.so
+  channels:
+    - alias: signal_channel
+      selectors:
+        channel: signal_vector
+    - alias: network_channel
+      selectors:
+        channel: network_vector

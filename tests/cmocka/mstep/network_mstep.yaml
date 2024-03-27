@@ -1,0 +1,105 @@
+---
+kind: Network
+metadata:
+  annotations:
+    message_lib: examples/stub/lib/message.so
+    function_lib: examples/stub/lib/function.so
+    node_id: 2
+    interface_id: 3
+    bus_id: 4
+  labels: {}
+  name: stub
+spec:
+  messages:
+    - message: example_message
+      annotations:
+        struct_name: stub_example_message_t
+        struct_size: 4
+        frame_id: 0x1f0u
+        frame_length: 8u
+        frame_type: 0
+      signals:
+        - signal: enable
+          annotations:
+            struct_member_name: enable
+            struct_member_offset: 0
+            struct_member_primitive_type: uint8_t
+        - signal: average_radius
+          annotations:
+            struct_member_name: average_radius
+            struct_member_offset: 1
+            struct_member_primitive_type: uint8_t
+            init_value: 1.0
+        - signal: temperature
+          annotations:
+            struct_member_name: temperature
+            struct_member_offset: 2
+            struct_member_primitive_type: int16_t
+            init_value: 265.0
+    - message: example_message2
+      annotations:
+        struct_name: stub_example_message2_t
+        struct_size: 1
+        frame_id: 0x1f1u
+        frame_length: 8u
+        frame_type: 0
+      signals:
+        - signal: radius
+          annotations:
+            struct_member_name: radius
+            struct_member_offset: 0
+            struct_member_primitive_type: uint8_t
+    - message: function_example
+      annotations:
+        struct_name: stub_function_example_t
+        struct_size: 4
+        frame_id: 0x1f2u
+        frame_length: 8u
+        frame_type: 2
+      signals:
+        - signal: crc
+          annotations:
+            struct_member_name: crc
+            struct_member_offset: 0
+            struct_member_primitive_type: uint8_t
+        - signal: alive
+          annotations:
+            struct_member_name: alive
+            struct_member_offset: 1
+            struct_member_primitive_type: uint8_t
+        - signal: foo
+          annotations:
+            struct_member_name: foo
+            struct_member_offset: 2
+            struct_member_primitive_type: uint8_t
+        - signal: bar
+          annotations:
+            struct_member_name: bar
+            struct_member_offset: 3
+            struct_member_primitive_type: uint8_t
+      functions:
+        encode:
+          - function: counter_inc_uint8
+            annotations:
+              position: 1
+          - function: crc_generate
+            annotations:
+              position: 0
+        decode:
+          - function: crc_validate
+            annotations:
+              position: 0
+    - message: scheduled_message
+      annotations:
+        cycle_time_ms: 10u
+        frame_id: 0x1f6u
+        frame_length: 8u
+        frame_type: 2
+        struct_name: stub_scheduled_message_t
+        struct_size: 1
+      signals:
+        - signal: schedule_signal
+          annotations:
+            struct_member_name: schedule_signal
+            struct_member_offset: 0
+            struct_member_primitive_type: uint8_t

@@ -1,0 +1,128 @@
+---
+title: Network Module
+linkTitle: Network
+---
+## Typedefs
+
+### InstanceData
+
+```c
+typedef struct InstanceData {
+    int position;
+}
+```
+
+## Functions
+
+### model_init
+
+
+Increment an 8-bit counter in the message packet.
+
+> Note: in the encode path, changes to the counter are not reflected in
+the corresponding signal. Subsequent calls to `network_message_recalculate`
+may overwrite the modified counter.
+
+
+#### Parameters
+
+message (NetworkMessage)
+: The message that this function will modify.
+
+data (void**)
+: Pointer reference for instance data.
+
+
+#### Returns
+
+0
+: Counter incremented.
+
+ENOMEM
+: Instance data could not be established.
+
+EPROTO
+: A required annotation was not located.
+
+
+#### Annotations
+
+position
+: The position of the counter in the message packet.
+
+### model_step
+
+
+Calculate a CRC based on the message packet. The CRC is written into the
+specified position in the message packet.
+
+The CRC algorithm is a simple summation of all bytes in the message packet.
+
+> Note: in the encode path (TX), changes to the counter are not reflected in
+the corresponding signal.
+
+
+#### Parameters
+
+message (NetworkMessage)
+: The message Returns that this function will modify.
+
+data (void**)
+: Pointer  reference for instance data.
+
+
+#### Returns
+
+0
+: CRC generated.
+
+ENOMEM
+: Instance data could not be established.
+
+EPROTO
+: A required annotation was not located.
+
+
+#### Annotations
+
+position
+: The position of the CRC in the message packet.
+
+### model_exit
+
+
+Validate the CRC of a message packet. The CRC is included in the message packet.
+
+> Note: in the decode path (RX), bad messages (function returns EBADMSG) will
+not change corresponding signals.
+
+
+#### Annotations
+
+position
+: The position of the CRC in the message packet.
+
+#### Parameters
+
+message (NetworkMessage)
+: The message that this function will modify.
+
+data (void**)
+: Pointer reference for instance data.
+
+
+#### Returns
+
+0
+: The CRC passed validation.
+
+EBADMSG
+: The CRC failed validation. The message will not be decoded.
+
+ENOMEM
+: Instance data could not be established.
+
+EPROTO
+: A required annotation was not located.
+
+

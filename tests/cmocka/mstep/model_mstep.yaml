@@ -1,0 +1,18 @@
+---
+kind: Model
+metadata:
+  name: Network
+spec:
+  runtime:
+    dynlib:
+      - os: linux
+        arch: amd64
+        # Runs from tests/cmocka/build/out (4 levels in).
+        path: ../../../../dse/network/build/_out/lib/libnetwork.so
+  channels:
+    - alias: signal_channel
+      selectors:
+        channel: signal_vector
+    - alias: network_channel
+      selectors:
+        channel: network_vector
