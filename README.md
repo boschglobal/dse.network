@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 # Dynamic Simulation Environment - Network Model
 
 [![CI](https://github.com/boschglobal/dse.network/actions/workflows/ci.yaml/badge.svg)](https://github.com/boschglobal/dse.network/actions/workflows/ci.yaml)
-[![Super Linter](https://github.com/boschglobal/dse.network/actions/workflows/super_linter.yaml/badge.svg)](https://github.com/boschglobal/dse.network/actions/workflows/super_linter.yaml)
+[![Super Linter](https://github.com/boschglobal/dse.network/actions/workflows/super-linter.yml/badge.svg)](https://github.com/boschglobal/dse.network/actions/workflows/super-linter.yml)
 ![GitHub](https://img.shields.io/github/license/boschglobal/dse.network)
 
 
