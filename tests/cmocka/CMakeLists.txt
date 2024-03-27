@@ -128,7 +128,7 @@ set(DSE_NETWORK_INCLUDE_DIR "${DSE_NETWORK_SOURCE_DIR}/../..")
 
 # Target - Stub
 # -------------
-add_subdirectory(../../dse/network/examples/stub build)
+add_subdirectory(../../dse/network build)
 
 
 # Target - Network (TDD)

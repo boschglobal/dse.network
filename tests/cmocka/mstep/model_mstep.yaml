@@ -8,7 +8,7 @@ spec:
       - os: linux
         arch: amd64
         # Runs from tests/cmocka/build/out (4 levels in).
-        path: ../../../../dse/network/build/_out/lib/libnetwork.so
+        path: ../../../../dse/network/build/_out/lib/network.so
   channels:
     - alias: signal_channel
       selectors:
