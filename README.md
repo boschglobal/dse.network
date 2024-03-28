@@ -21,48 +21,6 @@ The resultant Functional Simulation (FSIL) may be used to validate complex funct
 
 The following diagram shows how Network Functions and a Virtual ECU may be connected using the Network Model to form a typical FSIL simulation.
 
-<div hidden>
-
-```
-@startuml
-nwdiag {
-  Driver
-  Brake
-  Motion
-  Safety
-
-  network Signal {
-    address = (physics)
-    Network
-
-    Driver
-    group function {
-      description = "Network Functions"
-      Brake
-      Motion
-      Safety
-    }
-  }
-  network Signal {
-    address = (ecu)
-    group ecu {
-      description = "Virtual ECU"
-      ECU
-      HYD [address = "        fmi"]
-    }
-  }
-  network Network {
-    address = (can)
-    width = full
-
-    Network
-    ECU
-  }
-}
-@enduml
-```
-
-</div>
 
 ![](doc/static/network-introduction.png)
 
