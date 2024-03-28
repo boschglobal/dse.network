@@ -105,6 +105,10 @@ install(
     DESTINATION
         data
 )
+install(TARGETS network
+    LIBRARY DESTINATION
+        examples/brake-by-wire/models/network/lib
+)
 install(
     DIRECTORY
         ../../licenses

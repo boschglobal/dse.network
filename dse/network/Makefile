@@ -27,9 +27,6 @@ build: external
 # Build incremental.
 	cd build; make
 	cd build; make install
-# Post Build modifications.
-	mkdir -p build/_out/examples/brake-by-wire/models/network/lib
-	cp build/_out/lib/network.so build/_out/examples/brake-by-wire/models/network/lib/network.so
 	@echo ""
 	@echo "Sandbox files: - $$(pwd)/build/_out"
 	@echo "--------------"
