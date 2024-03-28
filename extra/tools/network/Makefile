@@ -6,7 +6,7 @@
 SRC           := $(shell find . -type f -name '*.go' -print)
 BIN_DIR       := $(CURDIR)/bin
 CLI_TOOLS     ?= $(BIN_DIR)/network
-GOFLAGS       := -mod=mod
+GOFLAGS       :=
 GOPRIVATE     ?= github.com/boschglobal
 
 # Additional no-Go related settings.

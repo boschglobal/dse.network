@@ -75,14 +75,8 @@ $ go get github.boschdevcloud.com/fsil/fsil.go/ast
 
 ### Go Module Vendor
 
-> NOTE: Its not clear if this partial-vendoring strategy works (go build -mod=mod ...). See `GOFLAGS` to manipulate.
-
 ```bash
 # Vendor the project.
-$  go mod vendor
-
-# Remove public modules.
-$ rm -rf vendor/github.com
-$ rm -rf vendor/golang.org/
-$ rm -rf vendor/gopkg.in/
+$ go mod tidy
+$ go mod vendor
 ```
