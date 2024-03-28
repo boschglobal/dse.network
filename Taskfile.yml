@@ -4,8 +4,8 @@
 version: '3'
 
 vars:
-  NETWORK_IMAGE: network
-  NETWORK_TAG: test
+  NETWORK_IMAGE: ghcr.io/boschglobal/dse-network
+  NETWORK_TAG: latest
   GCC_IMAGE: ghcr.io/boschglobal/dse-gcc-builder
   GCC_TAG: main
 

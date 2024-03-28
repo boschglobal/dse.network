@@ -15,19 +15,140 @@ SPDX-License-Identifier: Apache-2.0
 
 Network Model of the Dynamic Simulation Environment (DSE) Core Platform.
 
+The Network Model can be used in simulations to connect Models to a (virtual) Network in cases where
+the Models themselves do not include a Communication Stack (which would connect to that Network).
+The resultant Functional Simulation (FSIL) may be used to validate complex functional interactions that span the entire network/ecu topology.
+
+The following diagram shows how Network Functions and a Virtual ECU may be connected using the Network Model to form a typical FSIL simulation.
+
+<div hidden>
+
+```
+@startuml
+nwdiag {
+  Driver
+  Brake
+  Motion
+  Safety
+
+  network Signal {
+    address = (physics)
+    Network
+
+    Driver
+    group function {
+      description = "Network Functions"
+      Brake
+      Motion
+      Safety
+    }
+  }
+  network Signal {
+    address = (ecu)
+    group ecu {
+      description = "Virtual ECU"
+      ECU
+      HYD [address = "        fmi"]
+    }
+  }
+  network Network {
+    address = (can)
+    width = full
+
+    Network
+    ECU
+  }
+}
+@enduml
+```
+
+</div>
+
+![](doc/static/network-introduction.png)
+
+
+The Network Model is implemented with the [Model C Library](https://github.com/boschglobal/dse.modelc) and uses the
+[Network Codec](https://github.com/boschglobal/dse.standards/tree/main/dse/ncodec) for interfacing with (virtual) Networks/Buses.
+The [Network Codec](https://github.com/boschglobal/dse.standards/tree/main/dse/ncodec) provides an implementation of the [Automotive Bus Schema](https://github.com/boschglobal/automotive-bus-schema).
+
 
 ### Project Structure
 
 ```
 L- dse/network  Network Model source code.
 L- extra        Build infrastructure.
-  L- docker     Containerised tools.
+  L- tools      Containerised tools.
 L- licenses     Third Party Licenses.
 L- tests        Unit and integration tests.
 ```
 
 
 ## Usage
+
+Network models can be built using the `network` tool (part of this project).
+A simulation comprised of both network models and other models can be run using the `simer` tool (part of the Model C project).
+
+```bash
+# Install Task and clone the network repo (includes Taskfile automation).
+$ sudo snap install task --classic
+$ git clone https://github.com/boschglobal/dse.network.git
+$ cd dse.network
+
+# Download the tutorial (or build locally with `make` command) ...
+$ export NETWORK_URL=https://github.com/boschglobal/dse.network/releases/download/v1.0.1/Network-1.0.2-linux-amd64.zip
+$ curl -fSL -o /tmp/network.zip $NETWORK_URL; unzip -d ./tutorial /tmp/network.zip
+
+# Change to the simulation root directory (i.e. the tutorial directory).
+$ cd tutorial/Network-1.0.2-linux-amd64/examples/brake-by-wire
+
+# Generate network code and configuration files.
+$ task generate \
+    DBCFILE=networks/brake/brake.dbc \
+    SIGNAL=can \
+    MIMETYPE="application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=1; node_id=1; interface_id=1"
+$ task generate \
+    DBCFILE=networks/vehicle/vehicle.dbc \
+    SIGNAL=can \
+    MIMETYPE="application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=1; node_id=2; interface_id=1"
+
+
+# Define a shell function for the Simer tool.
+$ export SIMER_IMAGE=ghcr.io/boschglobal/dse-simer:2.0.11
+$ simer() { ( cd "$1" && shift && docker run -it --rm -v $(pwd):/sim $SIMER_IMAGE "$@"; ) }
+
+# Run the simulation.
+$ simer . -endtime 0.04
+```
+
+Documentation for the `simer` tool is available here : https://boschglobal.github.io/dse.doc/docs/user/simer
+
+
+## Build
+
+> Note : see the following section on configuring toolchains.
+
+```bash
+# Get the repo.
+$ git clone https://github.com/boschglobal/dse.network.git
+$ cd dse.network
+
+# Optionally set builder images.
+$ export GCC_BUILDER_IMAGE=ghcr.io/boschglobal/dse-gcc-builder:main
+
+# Build.
+$ make
+
+# Run tests.
+$ make test
+
+# Build containerised tools.
+$ make tools
+
+# Remove (clean) temporary build artifacts.
+$ make clean
+$ make cleanall
+```
+
 
 ### Toolchains
 
@@ -46,69 +167,6 @@ used as follows:
 ```bash
 $ export GCC_BUILDER_IMAGE=ghcr.io/boschglobal/dse-gcc-builder:main
 ```
-
-
-### Build
-
-```bash
-# Get the repo.
-$ git clone https://github.com/boschglobal/dse.network.git
-$ cd dse.network
-
-# Optionally set builder images.
-$ export GCC_BUILDER_IMAGE=ghcr.io/boschglobal/dse-gcc-builder:main
-
-# Build.
-$ make
-
-# Run tests.
-$ make test
-
-# Remove (clean) temporary build artifacts.
-$ make clean
-$ make cleanall
-```
-
-
-### Example
-
-The Network Model includes a sample Network (CAN database) which can be used to
-generate a Message Library. This Message Library is then loaded by the
-Network Model and together they provide a connection between the Signal and
-Network interfaces of a Simulation.
-
-The following commands illustrate the process of generating a Message Library.
-
-```bash
-# Get the example from repo.
-$ git clone https://github.com/boschglobal/dse.network.git
-$ cd dse.network/dse/network/examples/stub
-
-# Generate C files (stub.h & stub.c).
-$ python -m cantools generate_c_source stub.dbc
-
-# Generate the Network configuration (network.yaml).
-$ dse.codegen cantools-network \
-    --input stub.h \
-    --output network.yaml \
-    --dbc stub.dbc \
-    --message_lib examples/stub/lib/message.so \
-    --node_id 2 \
-    --interface_id 3 \
-    --bus_id 4
-
-# Generate a Signal Group (signalgroup.yaml) to represent Signals in the Simulation.
-$ dse.convert signalgroup \
-    --input network.yaml \
-    --output signalgroup.ymal \
-    --name "signal" \
-    --labels "{'channel': 'signal_vector'}"
-```
-
-After those steps the Message Library can be configured as a part of a
-Simulation. The user documentation contains full details of how to build,
-configure and use the Network Model. The `dse/network/examples/stub` folder
-includes a complete example configuration.
 
 
 ## Contribute
