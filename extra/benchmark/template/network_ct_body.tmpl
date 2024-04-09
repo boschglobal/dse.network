@@ -1,0 +1,54 @@
+
+int message{{.}}_pack(
+    uint8_t *dst_p,
+    const struct message_t *src_p,
+    size_t size)
+{
+    if (size < 8u) {
+        return (-EINVAL);
+    }
+
+    memset(&dst_p[0], 0, 8);
+
+    dst_p[0] |= pack_left_shift_u8(src_p->radius, 1u, 0x7eu);
+
+    return (8);
+}
+
+int message{{.}}_unpack(
+    struct message_t *dst_p,
+    const uint8_t *src_p,
+    size_t size)
+{
+    if (size < 8u) {
+        return (-EINVAL);
+    }
+
+    dst_p->radius = unpack_right_shift_u8(src_p[0], 1u, 0x7eu);
+
+    return (0);
+}
+
+int message{{.}}_init(struct message_t *msg_p)
+{
+    if (msg_p == NULL) return -1;
+
+    memset(msg_p, 0, sizeof(struct message_t));
+
+    return 0;
+}
+
+uint8_t message{{.}}_signal_encode(double value)
+{
+    return (uint8_t)(value / 0.1);
+}
+
+double message{{.}}_signal_decode(uint8_t value)
+{
+    return ((double)value * 0.1);
+}
+
+bool message{{.}}_signal_is_in_range(uint8_t value)
+{
+    return (value <= 50u);
+}

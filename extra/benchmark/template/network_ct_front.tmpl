@@ -1,0 +1,37 @@
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
+
+#ifndef EINVAL
+#    define EINVAL 22
+#endif
+
+
+
+struct message_t {
+    /**
+     * Range: 0..50 (0..5 m)
+     * Scale: 0.1
+     * Offset: 0
+     */
+    uint8_t radius;
+};
+
+static inline uint8_t pack_left_shift_u8(
+    uint8_t value,
+    uint8_t shift,
+    uint8_t mask)
+{
+    return (uint8_t)((uint8_t)(value << shift) & mask);
+}
+
+static inline uint8_t unpack_right_shift_u8(
+    uint8_t value,
+    uint8_t shift,
+    uint8_t mask)
+{
+    return (uint8_t)((uint8_t)(value & mask) >> shift);
+}
+

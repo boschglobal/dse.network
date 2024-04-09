@@ -1,0 +1,65 @@
+
+version: '3'
+
+vars:
+  GO_BUILDER_IMAGE: golang:bullseye
+  GCC_BUILDER_IMAGE: golang:bullseye
+
+tasks:
+
+  benchmark-tools:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - mkdir -p build
+      - docker run --rm -v $(pwd):/tmp  -w /tmp {{.GO_BUILDER_IMAGE}} go build -o build/benchmark-gen benchmark-gen.go
+    sources:
+      - benchmark-gen.go
+    generates:
+      - build/benchmark-gen
+
+  benchmark-gen:
+    run: always
+    deps:
+      - benchmark-tools
+    dir: '{{.USER_WORKING_DIR}}'
+    vars:
+      SIGNALCOUNT: '{{.SIGNALCOUNT | default 2}}'
+    cmds:
+      - mkdir -p build
+      - build/benchmark-gen --signals {{.SIGNALCOUNT}}
+    sources:
+      - build/benchmark-gen
+      - template/network_ct_front.tmpl
+      - template/network_ct_body.tmpl
+    generates:
+      - build/network_ct.c
+
+  benchmark-build:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    vars:
+      SIGNALCOUNT: '{{.SIGNALCOUNT | default 2}}'
+    cmds:
+      - docker run --rm -v $(pwd):/tmp -w /tmp {{.GCC_BUILDER_IMAGE}}
+          gcc -shared -o build/network_ct.so -Wall -fpic build/network_ct.c
+      - docker run --rm -v $(pwd):/tmp -w /tmp {{.GCC_BUILDER_IMAGE}}
+          gcc -o build/bench_net -Wall bench_net.c -ldl
+    sources:
+      - build/network_ct.c
+      - bench_net.c
+    generates:
+      - build/network_ct.so
+      - build/bench_net
+
+  benchmark:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    vars:
+      SIGNALCOUNT: '{{.SIGNALCOUNT | default 1000}}'
+    cmds:
+      - task: benchmark-gen
+        vars: { SIGNALCOUNT: '{{.SIGNALCOUNT}}' }
+      - task: benchmark-build
+      - ls -R build/
+      - build/bench_net {{.SIGNALCOUNT}}
