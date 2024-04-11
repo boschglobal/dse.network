@@ -135,6 +135,69 @@ void run_bench_loop(double* signals, signal_t* st, int count, int steps)
 }
 
 
+typedef struct vector_t {
+    int count;
+
+    double*  signal;
+    double*  factor;
+    int64_t* offset;
+
+    uint64_t* buffer;
+    uint64_t* pack;
+
+    uint64_t* max;
+    uint64_t* min;
+    uint64_t* shift;
+    uint64_t* mask;
+} vector_t;
+
+void _allocate_vectors(vector_t* v)
+{
+    v->signal = calloc(v->count, sizeof(double));
+    v->factor = calloc(v->count, sizeof(double));
+    v->offset = calloc(v->count, sizeof(int64_t));
+
+    v->buffer = calloc(v->count, sizeof(uint64_t));
+    v->pack = calloc(v->count, sizeof(uint64_t));
+
+    v->max = calloc(v->count, sizeof(uint64_t));
+    v->min = calloc(v->count, sizeof(uint64_t));
+    v->shift = calloc(v->count, sizeof(uint64_t));
+    v->mask = calloc(v->count, sizeof(uint64_t));
+}
+
+void run_bench_vector(double* signals, signal_t* st, int count, int steps)
+{
+    vector_t v = { .count = count };
+    _allocate_vectors(&v);
+    struct timespec _ts = get_timespec_now();
+
+    for (int step = 0; step < steps; step++) {
+        for (int i = 0; i < count; i++) {
+            double original = v.signal[i];
+            double value = original + 1;
+            value = value > 100 ? 0.0 : value;
+            value = value / 0.5;
+            v.buffer[i] = (uint64_t)((uint8_t)(value));
+            v.pack[i] |=
+                (uint64_t)((uint8_t)((uint8_t)(st[i].buffer[0] << 1u) & 0x7eu));
+            v.buffer[i] =
+                (uint64_t)((uint8_t)((uint8_t)(v.pack[i] & 0x7eu) >> 1u));
+            if (v.buffer[i] <= 200u) {
+                value = v.buffer[i] * 0.5;
+            } else {
+                value = value + 1;
+            }
+            v.signal[i] = value;
+        }
+    }
+
+    uint64_t time_ns = get_elapsedtime_ns(_ts);
+    printf("VECTOR:   Time %.9f (steps=%d, signals=%d)\n",
+        ns_to_us_to_sec(time_ns), steps, count);
+}
+
+
 int main(int argc, char** argv)
 {
     if (argc != 2) {
@@ -175,6 +238,7 @@ int main(int argc, char** argv)
     printf("  run cantools based benchmark ...\n");
     run_bench_ct(signals, signal_table, signalCount, steps);
     run_bench_loop(signals, signal_table, signalCount, steps);
+    run_bench_vector(signals, signal_table, signalCount, steps);
 
 
     exit(0);
