@@ -16,17 +16,19 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 
-int network_load(Network *network, ModelInstanceSpec *model_instance)
+int network_load(Network* network, ModelInstanceSpec* model_instance)
 {
     assert(network);
     network_parse(network, model_instance);
     network_load_message_lib(network, network->message_lib_path);
     network_load_function_lib(network, network->function_lib_path);
     network_load_function_funcs(network, network->messages);
-    network_load_signal_funcs(network, network->messages, network->messages->signals);
-    network_load_message_funcs(network, network->messages);
+    network_load_signal_funcs(
+        network, network->messages, network->messages->signals);
+    network_load_message_funcs(network);
     network_load_marshal_lists(network, model_instance);
-    network_get_signal_names(network->marshal_list, &network->signal_name, &network->signal_count);
+    network_get_signal_names(
+        network->marshal_list, &network->signal_name, &network->signal_count);
     network->signal_vector = calloc(network->signal_count, sizeof(double));
     for (size_t i = 0; i < network->signal_count; i++) {
         log_info("Network Signal [%d] : %s", i, network->signal_name[i]);

@@ -51,7 +51,7 @@ void test_function_encode(void** state)
 
     /* Call the message encode functions. */
     network_function_apply_encode(network);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Check the packet and signals are modified. */
     assert_int_equal(((uint8_t*)payload)[(0) / sizeof(uint8_t)], 57);
@@ -118,7 +118,7 @@ void test_function_decode(void** state)
     nm_p->unpack_func(nm_p->buffer, payload, length);
     nm_p->update_signals = true;
     network_function_apply_decode(network);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Check the signals are set. */
     assert_true(nm_p->update_signals);
@@ -181,7 +181,7 @@ void test_function_decode_EBADMSG(void** state)
     nm_p->unpack_func(nm_p->buffer, payload, length);
     nm_p->update_signals = true;
     network_function_apply_decode(network);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Check the signals are not set. */
     assert_false(nm_p->update_signals);

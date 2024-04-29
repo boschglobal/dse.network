@@ -3,19 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-# CANTools Builder
-# ================
-FROM python:3.8.12-slim-bullseye as gencode
+# Python nuitka Builder
+# =====================
+FROM python:3.8.12-slim-bullseye as nuitka
 
 ENV PATH="/opt/venv/bin:$PATH"
 ADD third_party/cantools /src/third_party/cantools
 ADD build/package/gencode.py /src/build/package/gencode.py
+ADD build/package/convert.py /src/build/package/convert.py
+ADD build/package/mimetype.py /src/build/package/mimetype.py
 
 RUN set -eux; \
     apt-get -y update; \
 	apt-get -y upgrade; \
     apt-get -y install --no-install-recommends \
-    build-essential \
+        build-essential \
         gcc \
         git \
         patchelf \
@@ -26,6 +28,10 @@ RUN set -eux; \
     python -m venv /opt/venv; \
     pip install --upgrade pip; pip install \
         build \
+        canopen \
+        canmatrix \
+        ldfparser \
+        lxml \
         nala \
         nuitka \
         pyyaml \
@@ -38,9 +44,12 @@ RUN set -eux; \
     ls -R /tmp/cantools \
     && \
     (cd /tmp/cantools; python -m build --wheel --outdir dist/ .); \
-    pip install --find-links /tmp/cantools/dist cantools; \
+    pip install /tmp/cantools cantools; \
     python -m nuitka --output-dir=/gencode --standalone --onefile /src/build/package/gencode.py; \
+    python -m nuitka --output-dir=/convert --standalone --onefile --include-package=canmatrix /src/build/package/convert.py; \
+    python -m nuitka --output-dir=/mimetype --standalone --onefile /src/build/package/mimetype.py; \
     pip list;
+
 
 
 # Network Builder
@@ -68,7 +77,17 @@ RUN set -eux; \
 
 # Install Generate
 # ================
-COPY --from=gencode /gencode/gencode.bin /usr/local/bin/gencode
+COPY --from=nuitka /gencode/gencode.bin /usr/local/bin/gencode
+
+
+# Install Convert
+# ================
+COPY --from=nuitka /convert/convert.bin /usr/local/bin/convert
+
+
+# Install Mimetype
+# ================
+COPY --from=nuitka /mimetype/mimetype.bin /usr/local/bin/mimetype
 
 
 # Install Network

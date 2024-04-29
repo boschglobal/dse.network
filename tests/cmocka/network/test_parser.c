@@ -149,7 +149,11 @@ void test_network_parse_messages(void** state)
     assert_string_equal(mock->network->messages[5].name, "float_types");
     assert_string_equal(mock->network->messages[6].name, "scheduled_message");
 
-    assert_null(mock->network->messages[7].name);  // Null terminating message.
+    assert_string_equal(mock->network->messages[7].name, "mux_message");
+    assert_string_equal(mock->network->messages[8].name, "mux_message_601");
+    assert_string_equal(mock->network->messages[9].name, "mux_message_602");
+
+    assert_null(mock->network->messages[10].name);  // Null terminating message.
 
     network_unload_parser(mock->network);
 }
@@ -269,6 +273,103 @@ void test_network_parse_functions(void** state)
 }
 
 
+static NetworkMessage* find_message(Network* n, const char* name)
+{
+    NetworkMessage* message = n->messages;
+    while (message && message->name) {
+        if (strcmp(message->name, name) == 0) {
+            break;
+        }
+        message++;
+    }
+    return message;
+}
+
+void test_network_parse_container(void** state)
+{
+    UNUSED(state);
+
+    /* Get the Mock objects. */
+    NetworkMock* mock = *state;
+
+    /* Initial conditions. */
+    assert_null(mock->network->message_lib_handle);
+    assert_null(mock->network->doc);
+    assert_null(mock->network->messages);
+    assert_non_null(mock->network->name);
+
+    /* Call parse directly. */
+    network_parse(mock->network, mock->model_instance);
+
+    /* Check parsed messages and signals (container related properties only). */
+    NetworkMessage* m;
+
+    m = find_message(mock->network, "mux_message");
+    assert_non_null(m);
+    assert_string_equal(m->name, "mux_message");
+    assert_int_equal(m->frame_id, 600);
+    assert_null(m->container);
+    assert_int_equal(m->mux_id, 0);
+    assert_null(m->mux_signal); // Not set until marshal list is built.
+    //assert_ptr_equal(m->mux_signal, &m->signals[0]);
+    assert_string_equal(m->signals[0].name, "header_id");
+    assert_int_equal(m->signals[0].internal, 0);
+    assert_int_equal(m->signals[0].mux_signal, 1);
+    assert_int_equal(m->signals[0].value, 0);
+    assert_string_equal(m->signals[1].name, "header_dlc");
+    assert_int_equal(m->signals[1].internal, 0);
+    assert_int_equal(m->signals[1].mux_signal, 0);
+    assert_int_equal(m->signals[1].value, 0);
+    assert_null(m->signals[2].name);
+
+    m = find_message(mock->network, "mux_message_601");
+    assert_non_null(m);
+    assert_string_equal(m->name, "mux_message_601");
+    assert_int_equal(m->frame_id, 600);
+    assert_non_null(m->container);
+    assert_string_equal(m->container, "mux_message");
+    assert_int_equal(m->mux_id, 601);
+    assert_null(m->mux_signal);
+    assert_string_equal(m->signals[0].name, "header_id");
+    assert_int_equal(m->signals[0].internal, 1);
+    assert_int_equal(m->signals[0].mux_signal, 0);
+    assert_int_equal(m->signals[0].value, 601);
+    assert_string_equal(m->signals[1].name, "header_dlc");
+    assert_int_equal(m->signals[1].internal, 1);
+    assert_int_equal(m->signals[1].mux_signal, 0);
+    assert_int_equal(m->signals[1].value, 42);
+    assert_string_equal(m->signals[2].name, "foo_double");
+    assert_int_equal(m->signals[2].internal, 0);
+    assert_int_equal(m->signals[2].mux_signal, 0);
+    assert_int_equal(m->signals[2].value, 0);
+    assert_null(m->signals[3].name);
+
+    m = find_message(mock->network, "mux_message_602");
+    assert_non_null(m);
+    assert_string_equal(m->name, "mux_message_602");
+    assert_int_equal(m->frame_id, 600);
+    assert_non_null(m->container);
+    assert_string_equal(m->container, "mux_message");
+    assert_int_equal(m->mux_id, 602);
+    assert_null(m->mux_signal);
+    assert_string_equal(m->signals[0].name, "header_id");
+    assert_int_equal(m->signals[0].internal, 1);
+    assert_int_equal(m->signals[0].mux_signal, 0);
+    assert_int_equal(m->signals[0].value, 602);
+    assert_string_equal(m->signals[1].name, "header_dlc");
+    assert_int_equal(m->signals[1].internal, 1);
+    assert_int_equal(m->signals[1].mux_signal, 0);
+    assert_int_equal(m->signals[1].value, 24);
+    assert_string_equal(m->signals[2].name, "bar_float");
+    assert_int_equal(m->signals[2].internal, 0);
+    assert_int_equal(m->signals[2].mux_signal, 0);
+    assert_int_equal(m->signals[2].value, 0);
+    assert_null(m->signals[3].name);
+
+    network_unload_parser(mock->network);
+}
+
+
 int run_parser_tests(void)
 {
     void* s = test_network_setup;
@@ -278,6 +379,7 @@ int run_parser_tests(void)
         cmocka_unit_test_setup_teardown(test_network_parse_database, s, t),
         cmocka_unit_test_setup_teardown(test_network_parse_messages, s, t),
         cmocka_unit_test_setup_teardown(test_network_parse_signals, s, t),
+        cmocka_unit_test_setup_teardown(test_network_parse_container, s, t),
     };
 
     return cmocka_run_group_tests_name("PARSER", tests, NULL, NULL);

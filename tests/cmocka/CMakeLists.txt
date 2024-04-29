@@ -175,6 +175,7 @@ add_executable(test_mstep
     mstep/__test__.c
     mstep/test_mstep.c
     mstep/test_schedule.c
+    mstep/test_container.c
     ${DSE_MODELC_LIB_MOCK_SOURCE_FILES}
     ${DSE_NETWORK_SOURCE_FILES}
     ${DSE_MODELC_SOURCE_FILES}

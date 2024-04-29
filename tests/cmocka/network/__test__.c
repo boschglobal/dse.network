@@ -23,8 +23,8 @@ int main()
     __log_level__ = LOG_QUIET;  // LOG_DEBUG;//LOG_QUIET;
 
     int rc = 0;
-    rc |= run_loader_tests();
     rc |= run_parser_tests();
+    rc |= run_loader_tests();
     rc |= run_engine_tests();
     rc |= run_function_tests();
     return rc;

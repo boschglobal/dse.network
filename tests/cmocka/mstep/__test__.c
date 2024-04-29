@@ -8,6 +8,7 @@
 
 extern int run_mstep_tests(void);
 extern int run_schedule_tests(void);
+extern int run_container_tests(void);
 
 
 int main()
@@ -15,5 +16,6 @@ int main()
     int rc = 0;
     rc |= run_mstep_tests();
     rc |= run_schedule_tests();
+    rc |= run_container_tests();
     return rc;
 }

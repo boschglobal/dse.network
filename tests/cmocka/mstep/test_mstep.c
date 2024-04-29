@@ -63,7 +63,7 @@ void test_mstep(void** state)
 
     assert_non_null(model->sv_signal);
     assert_string_equal(model->sv_signal->name, "signal");
-    assert_int_equal(model->sv_signal->count, 4);
+    assert_int_equal(model->sv_signal->count, 5);
     assert_non_null(model->sv_signal->scalar);
     assert_non_null(model->sv_network);
     assert_string_equal(model->sv_network->name, "network");

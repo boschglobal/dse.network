@@ -75,12 +75,12 @@ void test_engine_get_signal_name_vector(void** state)
     /* Call load. */
     network_load(mock->network, mock->model_instance);
 
-    assert_int_equal(mock->network->signal_count, 19);
+    assert_int_equal(mock->network->signal_count, 27);
     assert_string_equal(mock->network->signal_name[0], "enable");
     assert_string_equal(mock->network->signal_name[1], "average_radius");
     assert_string_equal(mock->network->signal_name[2], "temperature");
     assert_string_equal(mock->network->signal_name[3], "radius");
-    assert_null(mock->network->signal_name[19]);
+    assert_null(mock->network->signal_name[27]);
     assert_non_null(mock->network->signal_vector);
 
     /* Check signal vector index. */
@@ -175,7 +175,7 @@ void test_engine_marshal_network_message_to_signal(void** state)
     ((int8_t*)message2)[(0) / sizeof(int8_t)] = 20;
 
     set_update_signals(network->marshal_list, true);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Check the signal vector. */
     assert_int_equal(network->signal_vector[0], 1);
@@ -190,7 +190,7 @@ void test_engine_marshal_network_message_to_signal(void** state)
     ((int8_t*)message1)[(3) / sizeof(int8_t)] = 70;
 
     set_update_signals(network->marshal_list, true);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Ensure the signal vector is NOT modified. */
     assert_int_equal(network->signal_vector[0], 1);
@@ -265,7 +265,7 @@ void test_engine_marshal_network_buffer_to_signal(void** state)
 
     /* Call Unpack and Decode. */
     set_update_signals(network->marshal_list, true);
-    network_marshal_messages_to_signals(network, network->marshal_list);
+    network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     assert_int_equal(network->messages->payload_len, 8);
 
@@ -274,6 +274,111 @@ void test_engine_marshal_network_buffer_to_signal(void** state)
     assert_int_equal(network->signal_vector[1], 2);
     assert_int_equal(network->signal_vector[2], 260);
     assert_int_equal(network->signal_vector[3], 2);
+
+
+    network_unload(mock->network);
+}
+
+
+static int32_t _find_signal_idx(const char** h, const char* n)
+{
+    for (int32_t idx = 0; h[idx]; idx++) {
+        if (strcmp(h[idx], n) == 0) return idx;
+    }
+    return -1;
+}
+
+static int32_t _find_message_idx(Network* net, const char* n)
+{
+    int32_t idx = 0;
+    for (NetworkMessage* msg = net->messages; msg && msg->name; msg++) {
+        if (strcmp(msg->name, n) == 0) return idx;
+        idx++;
+    }
+    return -1;
+}
+
+
+void test_engine_marshal_container_message(void** state)
+{
+    UNUSED(state);
+
+    /* Get the Mock objects. */
+    NetworkMock* mock = *state;
+    Network*     n = mock->network;
+
+    /* Call load. */
+    network_load(mock->network, mock->model_instance);
+    assert_non_null(n);
+    assert_non_null(n->messages);
+    assert_non_null(n->signal_vector);
+    assert_non_null(n->signal_count);
+    assert_non_null(n->marshal_list);
+
+    int32_t foo_idx = _find_signal_idx(n->signal_name, "foo_double");
+    assert_in_range(foo_idx, 0, n->signal_count);
+    int32_t m601_idx = _find_message_idx(n, "mux_message_601");
+    assert_in_range(m601_idx, 0, 10);
+
+    // TX Path
+    n->signal_vector[foo_idx] = 10;
+
+    /* Call Pack and Encode. */
+    network_marshal_signals_to_messages(n, n->marshal_list);
+    network_pack_messages(n);
+
+    uint8_t m601_msg[] = {
+        0x59, 0x02, 0x00,                                // header_id
+        0x2a,                                            // header_dlc
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40,  // foo_double
+    };
+    uint8_t* _payload = n->messages[m601_idx].payload;
+    // for (unsigned int i = 0; i < sizeof(m601_msg); i++) {
+    //     log_error("  0x%02x  0x%02x", _payload[i], m601_msg[i]);
+    // }
+    assert_int_equal(n->messages[m601_idx].payload_len, 12);
+    assert_memory_equal(_payload, m601_msg, sizeof(m601_msg));
+
+    // RX Path
+    _payload[10] = 0x34;  // eff. 10 -> 20
+
+    set_update_signals(n->marshal_list, true);
+    network_unpack_messages(n);
+    network_marshal_messages_to_signals(n, n->marshal_list, false);
+
+    assert_double_equal(n->signal_vector[foo_idx], 20, 0);
+
+
+    network_unload(mock->network);
+}
+
+
+void test_engine_marshal_container_mux_signal(void** state)
+{
+    UNUSED(state);
+
+    /* Get the Mock objects. */
+    NetworkMock* mock = *state;
+    Network*     n = mock->network;
+
+    /* Call load. */
+    network_load(mock->network, mock->model_instance);
+    assert_non_null(n);
+    assert_non_null(n->messages);
+    assert_non_null(n->signal_vector);
+    assert_non_null(n->signal_count);
+    assert_non_null(n->marshal_list);
+
+    int32_t m600_idx = _find_message_idx(n, "mux_message");
+    assert_in_range(m600_idx, 0, 10);
+    NetworkMessage* m600 = &n->messages[m600_idx];
+    assert_non_null(m600);
+    assert_non_null(m600->mux_signal);
+    NetworkSignal* s600 = m600->mux_signal;
+    assert_string_equal(s600->name, "header_id");
+    assert_non_null(s600->mux_mi);
+    MarshalItem* mi600 = s600->mux_mi;
+    assert_ptr_equal(mi600->signal, s600);
 
 
     network_unload(mock->network);
@@ -301,6 +406,10 @@ int run_engine_tests(void)
             test_engine_marshal_network_signal_to_buffer, s, t),
         cmocka_unit_test_setup_teardown(
             test_engine_marshal_network_buffer_to_signal, s, t),
+        cmocka_unit_test_setup_teardown(
+            test_engine_marshal_container_message, s, t),
+        cmocka_unit_test_setup_teardown(
+            test_engine_marshal_container_mux_signal, s, t),
     };
 
     return cmocka_run_group_tests_name("ENGINE", tests, NULL, NULL);

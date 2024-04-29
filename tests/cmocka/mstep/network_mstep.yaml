@@ -15,8 +15,8 @@ spec:
       annotations:
         struct_name: stub_example_message_t
         struct_size: 4
-        frame_id: 0x1f0u
-        frame_length: 8u
+        frame_id: 0x1f0
+        frame_length: 8
         frame_type: 0
       signals:
         - signal: enable
@@ -36,12 +36,13 @@ spec:
             struct_member_offset: 2
             struct_member_primitive_type: int16_t
             init_value: 265.0
+
     - message: example_message2
       annotations:
         struct_name: stub_example_message2_t
         struct_size: 1
-        frame_id: 0x1f1u
-        frame_length: 8u
+        frame_id: 0x1f1
+        frame_length: 8
         frame_type: 0
       signals:
         - signal: radius
@@ -49,12 +50,13 @@ spec:
             struct_member_name: radius
             struct_member_offset: 0
             struct_member_primitive_type: uint8_t
+
     - message: function_example
       annotations:
         struct_name: stub_function_example_t
         struct_size: 4
-        frame_id: 0x1f2u
-        frame_length: 8u
+        frame_id: 0x1f2
+        frame_length: 8
         frame_type: 2
       signals:
         - signal: crc
@@ -89,11 +91,12 @@ spec:
           - function: crc_validate
             annotations:
               position: 0
+
     - message: scheduled_message
       annotations:
-        cycle_time_ms: 10u
-        frame_id: 0x1f6u
-        frame_length: 8u
+        cycle_time_ms: 10
+        frame_id: 0x1f6
+        frame_length: 8
         frame_type: 2
         struct_name: stub_scheduled_message_t
         struct_size: 1
@@ -103,3 +106,53 @@ spec:
             struct_member_name: schedule_signal
             struct_member_offset: 0
             struct_member_primitive_type: uint8_t
+
+    - message: mux_message
+      annotations:
+        frame_id: 600
+        frame_length: 12
+        frame_type: 1
+        struct_name: stub_mux_message_t
+        struct_size: 16
+      signals:
+      - signal: header_id
+        annotations:
+          mux_signal: true
+          struct_member_name: header_id
+          struct_member_offset: 0
+          struct_member_primitive_type: uint32_t
+      - signal: header_dlc
+        annotations:
+          struct_member_name: header_dlc
+          struct_member_offset: 4
+          struct_member_primitive_type: uint8_t
+
+    - message: mux_message_601
+      annotations:
+        container: mux_message
+        container_mux_id: 601
+        frame_id: 600
+        frame_length: 12
+        frame_type: 1
+        struct_name: stub_mux_message_t
+        struct_size: 16
+      signals:
+      - signal: header_id
+        annotations:
+          internal: true
+          value: 601
+          struct_member_name: header_id
+          struct_member_offset: 0
+          struct_member_primitive_type: uint32_t
+      - signal: header_dlc
+        annotations:
+          internal: true
+          value: 42
+          struct_member_name: header_dlc
+          struct_member_offset: 4
+          struct_member_primitive_type: uint8_t
+      - signal: foo_double
+        annotations:
+          struct_member_name: foo_double
+          struct_member_offset: 8
+          struct_member_primitive_type: double

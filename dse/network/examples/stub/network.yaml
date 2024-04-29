@@ -12,8 +12,8 @@ metadata:
 spec:
   messages:
   - annotations:
-      frame_id: 0x1f0u
-      frame_length: 8u
+      frame_id: 0x1f0
+      frame_length: 8
       frame_type: 0
       struct_name: stub_example_message_t
       struct_size: 8
@@ -37,8 +37,8 @@ spec:
         struct_member_primitive_type: int16_t
       signal: temperature
   - annotations:
-      frame_id: 0x1f1u
-      frame_length: 8u
+      frame_id: 0x1f1
+      frame_length: 8
       frame_type: 0
       struct_name: stub_example_message2_t
       struct_size: 8
@@ -50,8 +50,8 @@ spec:
         struct_member_primitive_type: uint8_t
       signal: radius
   - annotations:
-      frame_id: 0x1f2u
-      frame_length: 8u
+      frame_id: 0x1f2
+      frame_length: 8
       frame_type: 0
       struct_name: stub_function_example_t
       struct_size: 8
@@ -66,7 +66,7 @@ spec:
         decode:
           - function: crc_validate
             annotations:
-              position: 0 
+              position: 0
     message: function_example
     signals:
     - annotations:
@@ -90,8 +90,8 @@ spec:
         struct_member_primitive_type: uint8_t
       signal: bar
   - annotations:
-      frame_id: 0x1f3u
-      frame_length: 16u
+      frame_id: 0x1f3
+      frame_length: 16
       frame_type: 0
       struct_name: stub_unsigned_types_t
       struct_size: 16
@@ -118,8 +118,8 @@ spec:
         struct_member_primitive_type: uint64_t
       signal: u_int64_signal
   - annotations:
-      frame_id: 0x1f4u
-      frame_length: 16u
+      frame_id: 0x1f4
+      frame_length: 16
       frame_type: 0
       struct_name: stub_signed_types_t
       struct_size: 16
@@ -146,8 +146,8 @@ spec:
         struct_member_primitive_type: int64_t
       signal: int64_signal
   - annotations:
-      frame_id: 0x1f5u
-      frame_length: 16u
+      frame_id: 0x1f5
+      frame_length: 16
       frame_type: 0
       struct_name: stub_float_types_t
       struct_size: 16
@@ -164,9 +164,9 @@ spec:
         struct_member_primitive_type: int32_t
       signal: float_signal
   - annotations:
-      cycle_time_ms: 10u
-      frame_id: 0x1f6u
-      frame_length: 8u
+      cycle_time_ms: 10
+      frame_id: 0x1f6
+      frame_length: 8
       frame_type: 2
       struct_name: stub_scheduled_message_t
       struct_size: 8
@@ -177,3 +177,83 @@ spec:
         struct_member_offset: 0
         struct_member_primitive_type: uint8_t
       signal: schedule_signal
+
+  - message: mux_message
+    annotations:
+      frame_id: 600
+      frame_length: 12
+      frame_type: 1
+      struct_name: stub_mux_message_t
+      struct_size: 16
+    signals:
+    - signal: header_id
+      annotations:
+        mux_signal: true
+        struct_member_name: header_id
+        struct_member_offset: 0
+        struct_member_primitive_type: uint32_t
+    - signal: header_dlc
+      annotations:
+        struct_member_name: header_dlc
+        struct_member_offset: 4
+        struct_member_primitive_type: uint8_t
+
+  - message: mux_message_601
+    annotations:
+      container: mux_message
+      container_mux_id: 601
+      frame_id: 600
+      frame_length: 12
+      frame_type: 1
+      struct_name: stub_mux_message_t
+      struct_size: 16
+    signals:
+    - signal: header_id
+      annotations:
+        internal: true
+        value: 601
+        struct_member_name: header_id
+        struct_member_offset: 0
+        struct_member_primitive_type: uint32_t
+    - signal: header_dlc
+      annotations:
+        internal: true
+        value: 42
+        struct_member_name: header_dlc
+        struct_member_offset: 4
+        struct_member_primitive_type: uint8_t
+    - signal: foo_double
+      annotations:
+        struct_member_name: foo_double
+        struct_member_offset: 8
+        struct_member_primitive_type: double
+
+  - message: mux_message_602
+    annotations:
+      container: mux_message
+      container_mux_id: 602
+      frame_id: 600
+      frame_length: 12
+      frame_type: 1
+      struct_name: stub_mux_message_t
+      struct_size: 16
+    signals:
+    - signal: header_id
+      annotations:
+        internal: true
+        value: 602
+        struct_member_name: header_id
+        struct_member_offset: 0
+        struct_member_primitive_type: uint32_t
+    - signal: header_dlc
+      annotations:
+        internal: true
+        value: 24
+        struct_member_name: header_dlc
+        struct_member_offset: 4
+        struct_member_primitive_type: uint8_t
+    - signal: bar_float
+      annotations:
+        struct_member_name: bar_float
+        struct_member_offset: 16
+        struct_member_primitive_type: float

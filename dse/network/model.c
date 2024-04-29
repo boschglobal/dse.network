@@ -122,6 +122,7 @@ ModelDesc* model_create(ModelDesc* model)
             log_debug("mapping attempt (signal/network): %s and %s",
                 sv_sig_name, nt_sig_name);
             if (strcmp(sv_sig_name, nt_sig_name) != 0) continue;
+            if (strlen(nt_sig_name) == 0) continue;  // Skip internal signals.
             /* Mapping found. */
             m->__sr_map[sv_idx].active = true;
             m->__sr_map[sv_idx].vector_index = sv_idx;
@@ -177,7 +178,8 @@ int model_step(ModelDesc* model, double* model_time, double stop_time)
     }
     network_decode_from_bus(&m->network, m->network_codec);
     network_function_apply_decode(&m->network);
-    network_marshal_messages_to_signals(&m->network, m->network.marshal_list);
+    network_marshal_messages_to_signals(
+        &m->network, m->network.marshal_list, false);
     m->sv_network->release(m->sv_network, m->sv_network_index);
 
 
@@ -213,7 +215,8 @@ int model_step(ModelDesc* model, double* model_time, double stop_time)
     network_pack_messages(&m->network);
     network_function_apply_encode(&m->network);
     network_encode_to_bus(&m->network, m->network_codec);
-    network_marshal_messages_to_signals(&m->network, m->network.marshal_list);
+    network_marshal_messages_to_signals(
+        &m->network, m->network.marshal_list, false);
 
     /* TX: Network->SignalVector. */
     for (uint32_t i = 0; i < m->sv_signal->count; i++) {

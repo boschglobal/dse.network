@@ -37,6 +37,14 @@ BO_ 501 FloatTypes: 16 PCM1
 BO_ 502 ScheduledMessage: 8 PCM1
  SG_ ScheduleSignal : 0|1@0+ (1,0) [0|0] "-" DSE_Network
 
+
+BO_ 600 MuxMessage: 12 PMC1
+ SG_ Header_ID M : 0|24@1+ (1,0) [0|0] "" DSE_Network
+ SG_ Header_DLC : 24|8@1+ (1,0) [0|255] "" DSE_Network
+ SG_ FooDouble m601 : 32|64@1- (1,0) [0|0] "" DSE_Network
+ SG_ BarFloat m602 : 32|32@1- (1,0) [0|0] "" DSE_Network
+
+
 BA_DEF_ "BusID" INT 0 0;
 BA_DEF_ BO_ "GenMsgSendType" ENUM "cyclicAndTriggered";
 BA_DEF_DEF_ "BusType" "CAN";
@@ -50,5 +58,8 @@ BA_ "GenMsgCycleTime" BO_ 502 10;
 BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 
-SIG_VALTYPE_ 500 DoubleSignal : 2;
-SIG_VALTYPE_ 500 FloatSignal : 1;
+SIG_VALTYPE_ 501 DoubleSignal : 2;
+SIG_VALTYPE_ 501 FloatSignal : 1;
+
+SIG_VALTYPE_ 600 FooDouble : 2;
+SIG_VALTYPE_ 600 BarFloat : 1;

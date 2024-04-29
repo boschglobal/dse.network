@@ -99,7 +99,7 @@ func (c *GenNetworkCommand) Run() error {
 		name := getMessageName(structName, c.dbcName)
 		message := kind.NetworkMessage{Message: name}
 		annotations := kind.Annotations{}
-		frameInfo := findFrameInfo(fmd, structName)
+		frameInfo := findFrameInfo(fmd, structName, c.dbcName)
 		if frameInfo != nil {
 			annotations["frame_id"] = frameInfo.FrameId
 			annotations["frame_length"] = frameInfo.FrameLength
@@ -124,11 +124,25 @@ func (c *GenNetworkCommand) Run() error {
 				offset = ((offset / typeSize) * typeSize) + typeSize
 			}
 			annotations := kind.Annotations{}
-			annotations["struct_member_name"] = s.Name
-			annotations["struct_member_offset"] = strconv.Itoa(offset)
-			annotations["struct_member_primitive_type"] = s.TypeName
-			signal.Annotations = &annotations
-			signals = append(signals, signal)
+			//container frames
+			if frameInfo.IsContainer {
+				if strings.ToLower(name) == "header_id" {
+					annotations["mux_signal"] = "true"
+				}
+				if strings.ToLower(name) == "header_id" || strings.ToLower(name) == "header_dlc" {
+					annotations["struct_member_name"] = s.Name
+					annotations["struct_member_offset"] = strconv.Itoa(offset)
+					annotations["struct_member_primitive_type"] = s.TypeName
+					signal.Annotations = &annotations
+					signals = append(signals, signal)
+				}
+			} else { //normal frames
+				annotations["struct_member_name"] = s.Name
+				annotations["struct_member_offset"] = strconv.Itoa(offset)
+				annotations["struct_member_primitive_type"] = s.TypeName
+				signal.Annotations = &annotations
+				signals = append(signals, signal)
+			}
 			// Set offset for next iteration.
 			offset += typeSize
 		}
@@ -140,6 +154,14 @@ func (c *GenNetworkCommand) Run() error {
 		annotations["struct_size"] = strconv.Itoa(offset)
 		message.Annotations = &annotations
 		net.Spec.Messages = append(net.Spec.Messages, message)
+		//For the contained frames
+		if frameInfo.IsContainer {
+			err = processContainer(&net, message, fmd, signalList, annotations, c.signalStyle)
+			if err != nil {
+				return err
+			}
+			continue
+		}
 	}
 
 	// Write the network configuration file.
@@ -148,11 +170,15 @@ func (c *GenNetworkCommand) Run() error {
 }
 
 type FrameInfo struct {
-	FrameId       string `yaml:"frame_id"`
-	FrameLength   string `yaml:"frame_length"`
-	CycleTime     string `yaml:"cycle_time_ms"`
-	CanFD         bool   `yaml:"is_can_fd"`
-	ExtendedFrame bool   `yaml:"is_extended_frame"`
+	FrameId        string   `yaml:"frame_id"`
+	FrameLength    string   `yaml:"frame_length"`
+	CycleTime      string   `yaml:"cycle_time_ms"`
+	CanFD          bool     `yaml:"is_can_fd"`
+	ExtendedFrame  bool     `yaml:"is_extended_frame"`
+	Container      string   `yaml:"container"`
+	ContainerMuxId string   `yaml:"container_mux_id"`
+	IsContainer    bool     `yaml:"is_container"`
+	Signals        []string `yaml:"signals"`
 }
 
 type FrameMetadata struct {
@@ -172,14 +198,9 @@ func loadFrameMetadata(path string) (*FrameMetadata, error) {
 	return &fmd, nil
 }
 
-func findFrameInfo(fmd *FrameMetadata, name string) *FrameInfo {
-	caser := cases.Title(language.Und)
-	parts := []string{}
-	for _, part := range strings.Split(name, "_") {
-		part = caser.String(part)
-		parts = append(parts, part)
-	}
-	frameName := strings.Join(parts[1:len(parts)-1], "")
+func findFrameInfo(fmd *FrameMetadata, name string, dbc string) *FrameInfo {
+	frameName := strings.TrimSuffix(name, "_t")
+	frameName = strings.TrimPrefix(frameName, dbc+"_")
 	if info, ok := fmd.Frames[frameName]; ok {
 		return &info
 	}
@@ -232,6 +253,66 @@ func getFrameType(f *FrameInfo) int {
 		frameType += 1
 	}
 	return frameType
+}
+
+func processContainer(net *kind.Network, message kind.NetworkMessage, fmd *FrameMetadata, signalList []ast.IndexMemberDecl, annotations kind.Annotations, signalStyle string) error {
+	for frameName, frameInfo := range fmd.Frames {
+		if frameInfo.Container == message.Message {
+			containedMessage := kind.NetworkMessage{Message: frameName}
+			muxAnnotations := kind.Annotations{}
+			muxAnnotations["frame_id"] = frameInfo.FrameId
+			muxAnnotations["frame_length"] = frameInfo.FrameLength
+			muxAnnotations["frame_type"] = strconv.Itoa(getFrameType(&frameInfo))
+			if frameInfo.CycleTime != "" {
+				muxAnnotations["cycle_time_ms"] = frameInfo.CycleTime
+			}
+			muxAnnotations["container"] = frameInfo.Container
+			muxAnnotations["container_mux_id"] = frameInfo.ContainerMuxId
+			muxAnnotations["struct_name"] = annotations["struct_name"]
+			muxSignalsList := frameInfo.Signals
+			signals := []kind.NetworkSignal{}
+			offset := 0
+			for _, s := range signalList {
+				name := getSignalName(s.Name, signalStyle)
+				signal := kind.NetworkSignal{Signal: name}
+				typeSize, err := getTypeSize(s.TypeName)
+				if err != nil {
+					return err
+				}
+				// Calculate the offset (type alignment).
+				if offset%typeSize != 0 {
+					offset = ((offset / typeSize) * typeSize) + typeSize
+				}
+				if strings.ToLower(name) == "header_id" || strings.ToLower(name) == "header_dlc" || slices.Contains(muxSignalsList, name) {
+					annotations := kind.Annotations{}
+					annotations["struct_member_name"] = s.Name
+					annotations["struct_member_offset"] = strconv.Itoa(offset)
+					annotations["struct_member_primitive_type"] = s.TypeName
+					if strings.ToLower(name) == "header_id" {
+						annotations["internal"] = "true"
+						annotations["value"] = frameInfo.ContainerMuxId
+					}
+					if strings.ToLower(name) == "header_dlc" {
+						annotations["internal"] = "true"
+						annotations["value"] = frameInfo.FrameLength
+					}
+					signal.Annotations = &annotations
+					signals = append(signals, signal)
+				}
+				// Set offset for next iteration.
+				offset += typeSize
+			}
+			containedMessage.Signals = &signals
+			// Calculate the final type size/offset.
+			if offset%8 != 0 {
+				offset = ((offset / 8) * 8) + 8
+			}
+			muxAnnotations["struct_size"] = strconv.Itoa(offset)
+			containedMessage.Annotations = &muxAnnotations
+			net.Spec.Messages = append(net.Spec.Messages, containedMessage)
+		}
+	}
+	return nil
 }
 
 func loadAst(path string) (*ast.Index, error) {

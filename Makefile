@@ -14,7 +14,7 @@ export DSE_CLIB_VERSION ?= 1.0.12
 
 ###############
 ## DSE Model C Library
-export DSE_MODELC_VERSION ?= 2.0.12
+export DSE_MODELC_VERSION ?= 2.0.13
 
 
 ###############

@@ -62,6 +62,17 @@ int network_load_marshal_lists(
     }
     hashlist_destroy(&m_list);
 
+    /* Set any mux_mi references. */
+    MarshalItem* mi_p = network->marshal_list;
+    while (mi_p->signal) {
+        if (mi_p->signal->mux_signal) {
+            mi_p->signal->mux_mi = mi_p;
+            mi_p->message->mux_signal = mi_p->signal;
+        }
+        /* Next item? */
+        mi_p++;
+    }
+
     return 0;
 }
 
@@ -92,7 +103,12 @@ int network_get_signal_names(
     size_t sv_offset = 0;
     while (mi_p->signal) {
         NetworkSignal* ns = mi_p->signal;
-        names[name_idx] = ns->signal_name;
+        if (ns->internal) {
+            /* Internal signal, prevent matching with ModelC signals.*/
+            names[name_idx] = "";
+        } else {
+            names[name_idx] = ns->signal_name;
+        }
         mi_p->signal_vector_index = sv_offset;
         name_idx++;
         sv_offset++;
@@ -112,162 +128,149 @@ int network_marshal_signals_to_messages(Network* network, MarshalItem* mi)
     if (network == NULL || mi == NULL) return 1;
 
     while (mi->signal) {
+        double _signal_value = network->signal_vector[mi->signal_vector_index];
+        if (mi->signal->internal && mi->message->container) {
+            /* Internal signals on container messages take a constant value. */
+            _signal_value = mi->signal->value;
+        }
+
         if (strcmp(mi->signal->member_type, "uint8_t") == 0) {
             uint8_t _value = 0;
-            _value = mi->signal->encode_func_int8(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int8(_signal_value);
             if (mi->signal->range_func_int8(_value)) {
-                ((int8_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int8_t)] =
-                    _value;
+                ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                               sizeof(int8_t)] = _value;
 
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((uint8_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                         sizeof(uint8_t)],
+                                                    sizeof(uint8_t)],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
             uint16_t _value = 0;
-            _value = mi->signal->encode_func_int16(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int16(_signal_value);
             if (mi->signal->range_func_int16(_value)) {
-                ((int16_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int16_t)] =
-                    _value;
+                ((int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int16_t)] = _value;
 
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((uint16_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                          sizeof(uint16_t)],
+                                                     sizeof(uint16_t)],
                     mi->signal->name);
             }
         }
 
         if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
             uint32_t _value = 0;
-            _value = mi->signal->encode_func_int32(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int32(_signal_value);
             if (mi->signal->range_func_int32(_value)) {
-                ((int32_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int32_t)] =
-                    _value;
+                ((int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int32_t)] = _value;
 
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((uint32_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                          sizeof(uint32_t)],
+                                                     sizeof(uint32_t)],
                     mi->signal->name);
             }
         }
 
         if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
             uint64_t _value = 0;
-            _value = mi->signal->encode_func_int64(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int64(_signal_value);
             if (mi->signal->range_func_int64(_value)) {
-                ((int64_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int64_t)] =
-                    _value;
+                ((int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int64_t)] = _value;
 
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((uint64_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                          sizeof(uint64_t)],
+                                                     sizeof(uint64_t)],
                     mi->signal->name);
             }
         }
 
         if (strcmp(mi->signal->member_type, "int8_t") == 0) {
             int8_t _value = 0;
-            _value = mi->signal->encode_func_int8(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int8(_signal_value);
             if (mi->signal->range_func_int8(_value)) {
-                ((int8_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int8_t)] =
-                    _value;
+                ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                               sizeof(int8_t)] = _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
-                    ((int8_t*)mi->message
-                            ->buffer)[mi->signal->buffer_offset / sizeof(int8_t)],
+                    _signal_value, _value,
+                    ((int8_t*)mi->message->buffer)[mi->signal->buffer_offset /
+                                                   sizeof(int8_t)],
                     mi->signal->name);
             }
         }
 
         if (strcmp(mi->signal->member_type, "int16_t") == 0) {
             int16_t _value = 0;
-            _value = mi->signal->encode_func_int16(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int16(_signal_value);
             if (mi->signal->range_func_int16(_value)) {
-                ((int16_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int16_t)] =
-                    _value;
+                ((int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int16_t)] = _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((int16_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                         sizeof(int16_t)],
+                                                    sizeof(int16_t)],
                     mi->signal->name);
             }
         }
 
         if (strcmp(mi->signal->member_type, "int32_t") == 0) {
             int32_t _value = 0;
-            _value = mi->signal->encode_func_int32(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int32(_signal_value);
             if (mi->signal->range_func_int32(_value)) {
-                ((int32_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int32_t)] =
-                    _value;
+                ((int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int32_t)] = _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((int32_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                         sizeof(int32_t)],
+                                                    sizeof(int32_t)],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "int64_t") == 0) {
             int16_t _value = 0;
-            _value = mi->signal->encode_func_int64(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_int64(_signal_value);
             if (mi->signal->range_func_int64(_value)) {
-                ((int64_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int64_t)] =
-                    _value;
+                ((int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                sizeof(int64_t)] = _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
+                    _signal_value, _value,
                     ((int64_t*)mi->message->buffer)[mi->signal->buffer_offset /
-                                                         sizeof(int64_t)],
+                                                    sizeof(int64_t)],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "float") == 0) {
             float _value = 0;
-            _value = mi->signal->encode_func_float(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_float(_signal_value);
             if (mi->signal->range_func_float(_value)) {
                 ((float*)mi->message
                         ->buffer)[(mi->signal->buffer_offset) / sizeof(float)] =
                     _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
-                    ((float*)mi->message
-                            ->buffer)[mi->signal->buffer_offset / sizeof(float)],
+                    _signal_value, _value,
+                    ((float*)mi->message->buffer)[mi->signal->buffer_offset /
+                                                  sizeof(float)],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "double") == 0) {
             double _value = 0;
-            _value = mi->signal->encode_func_double(
-                network->signal_vector[mi->signal_vector_index]);
+            _value = mi->signal->encode_func_double(_signal_value);
             if (mi->signal->range_func_double(_value)) {
-                ((double*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(double)] =
-                    _value;
+                ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                               sizeof(double)] = _value;
                 log_debug("calling encode_func (%f -> %d): %d %s",
-                    network->signal_vector[mi->signal_vector_index], _value,
-                    ((double*)mi->message
-                            ->buffer)[mi->signal->buffer_offset / sizeof(double)],
+                    _signal_value, _value,
+                    ((double*)mi->message->buffer)[mi->signal->buffer_offset /
+                                                   sizeof(double)],
                     mi->signal->name);
             }
         }
@@ -280,77 +283,84 @@ int network_marshal_signals_to_messages(Network* network, MarshalItem* mi)
 }
 
 
-int network_marshal_messages_to_signals(Network* network, MarshalItem* mi)
+int network_marshal_messages_to_signals(
+    Network* network, MarshalItem* mi, bool single)
 {
     if (network == NULL || mi == NULL) return 1;
     while (mi->signal) {
-        log_trace("MI Signal: frame_id=%d, update_signals=%d, index=%d, type=%s",
-        mi->message->frame_id, mi->message->update_signals, mi->signal_vector_index, mi->signal->member_type);
-        if (mi->message->update_signals == false) {
-            /* Next item. */
+        log_trace(
+            "MI Signal: frame_id=%d, update_signals=%d, index=%d, type=%s",
+            mi->message->frame_id, mi->message->update_signals,
+            mi->signal_vector_index, mi->signal->member_type);
+        if (mi->message->update_signals == false && single == false) {
+            /* Next item (force if single == true). */
             mi++;
             continue;
         }
         if (strcmp(mi->signal->member_type, "uint8_t") == 0) {
             if (mi->signal->range_func_int8(
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                        sizeof(int8_t)])) {
-                double _v = mi->signal->decode_func_int8((
-                    (int8_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int8_t)]);
+                                                   sizeof(int8_t)])) {
+                double _v = mi->signal->decode_func_int8(
+                    ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int8_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((uint8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(uint8_t)],
+                    ((uint8_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(uint8_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
-            if (mi->signal->range_func_int16(
-                    ((int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int16_t)])) {
+            if (mi->signal->range_func_int16((
+                    (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int16_t)])) {
                 double _v = mi->signal->decode_func_int16((
-                    (int16_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int16_t)]);
+                    (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int16_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((uint16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                          sizeof(uint16_t)],
+                    ((uint16_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(uint16_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
-            if (mi->signal->range_func_int32(
-                    ((int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int32_t)])) {
+            if (mi->signal->range_func_int32((
+                    (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int32_t)])) {
                 double _v = mi->signal->decode_func_int32((
-                    (int32_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int32_t)]);
+                    (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int32_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((uint32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                          sizeof(uint32_t)],
+                    ((uint32_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(uint32_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
-            if (mi->signal->range_func_int64(
-                    ((int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int64_t)])) {
+            if (mi->signal->range_func_int64((
+                    (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int64_t)])) {
                 double _v = mi->signal->decode_func_int64((
-                    (int64_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int64_t)]);
+                    (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int64_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((uint64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                          sizeof(uint64_t)],
+                    ((uint64_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(uint64_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
@@ -358,71 +368,74 @@ int network_marshal_messages_to_signals(Network* network, MarshalItem* mi)
         if (strcmp(mi->signal->member_type, "int8_t") == 0) {
             if (mi->signal->range_func_int8(
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                        sizeof(int8_t)])) {
-                double _v = mi->signal->decode_func_int8((
-                    (int8_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int8_t)]);
+                                                   sizeof(int8_t)])) {
+                double _v = mi->signal->decode_func_int8(
+                    ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int8_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                        sizeof(int8_t)],
+                                                   sizeof(int8_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "int16_t") == 0) {
-            if (mi->signal->range_func_int16(
-                    ((int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int16_t)])) {
+            if (mi->signal->range_func_int16((
+                    (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int16_t)])) {
                 double _v = mi->signal->decode_func_int16((
-                    (int16_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int16_t)]);
+                    (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int16_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int16_t)],
+                    ((int16_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(int16_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "int32_t") == 0) {
-            if (mi->signal->range_func_int32(
-                    ((int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int32_t)])) {
+            if (mi->signal->range_func_int32((
+                    (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int32_t)])) {
                 double _v = mi->signal->decode_func_int32((
-                    (int32_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int32_t)]);
+                    (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int32_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int32_t)],
+                    ((int32_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(int32_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "int64_t") == 0) {
-            if (mi->signal->range_func_int64(
-                    ((int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int64_t)])) {
+            if (mi->signal->range_func_int64((
+                    (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int64_t)])) {
                 double _v = mi->signal->decode_func_int64((
-                    (int64_t*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(int64_t)]);
+                    (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(int64_t)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
-                    ((int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                         sizeof(int64_t)],
+                    ((int64_t*)
+                            mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                 sizeof(int64_t)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         if (strcmp(mi->signal->member_type, "float") == 0) {
-            if (mi->signal->range_func_float((
-                    (float*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(float)])) {
+            if (mi->signal->range_func_float(
+                    ((float*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                  sizeof(float)])) {
                 double _v = mi->signal->decode_func_float((
                     (float*)mi->message
                         ->buffer)[(mi->signal->buffer_offset) / sizeof(float)]);
@@ -430,7 +443,7 @@ int network_marshal_messages_to_signals(Network* network, MarshalItem* mi)
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((float*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                       sizeof(float)],
+                                                  sizeof(float)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
@@ -438,20 +451,21 @@ int network_marshal_messages_to_signals(Network* network, MarshalItem* mi)
         if (strcmp(mi->signal->member_type, "double") == 0) {
             if (mi->signal->range_func_double(
                     ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                        sizeof(double)])) {
-                double _v = mi->signal->decode_func_double((
-                    (double*)mi->message
-                        ->buffer)[(mi->signal->buffer_offset) / sizeof(double)]);
+                                                   sizeof(double)])) {
+                double _v = mi->signal->decode_func_double(
+                    ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
+                                                   sizeof(double)]);
                 network->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
-                                                        sizeof(double)],
+                                                   sizeof(double)],
                     _v, network->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
         /* Next item. */
+        if (single) break; /* Only process the single MI. */
         mi++;
     }
     return 0;
@@ -474,11 +488,11 @@ void network_pack_messages(Network* network)
 
             /* Check if the payload_checksum is different. */
             if (payload_checksum != nm_p->buffer_checksum) {
-                if(nm_p->cycle_time_ms) {
+                if (nm_p->cycle_time_ms) {
                 } else {
-                nm_p->needs_tx = true;
-                log_debug("encode path checksum %u", payload_checksum);
-                nm_p->buffer_checksum = payload_checksum;
+                    nm_p->needs_tx = true;
+                    log_debug("encode path checksum %u", payload_checksum);
+                    nm_p->buffer_checksum = payload_checksum;
                 }
             } else {
                 nm_p->needs_tx = false;

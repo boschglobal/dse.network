@@ -26,7 +26,6 @@ void test_network_load_message_lib(void** state)
 void test_network_load_message_funcs(void** state)
 {
     UNUSED(state);
-    Network        network = { .name = "stub" };
     /* Initialize messages with signals array. */
     NetworkMessage network_message[] = {
         { .name = "example_message" },
@@ -35,8 +34,14 @@ void test_network_load_message_funcs(void** state)
         { .name = "unsigned_types" },
         { .name = "signed_types" },
         { .name = "float_types" },
+        // Container messages.
+        { .name = "mux_message" },
+        { .name = "mux_message_601", .container = "mux_message" },
+        { .name = "mux_message_602", .container = "mux_message" },
+        // End.
         { .name = NULL },
     };
+    Network        network = { .name = "stub", .messages = network_message };
 
     /* Load the DLL. */
     void* handle =
@@ -48,10 +53,8 @@ void test_network_load_message_funcs(void** state)
         assert_null(network_message[i].pack_func);
         assert_null(network_message[i].unpack_func);
     }
-    for (i = 0; network_message[i].name != NULL; i++) {
-        int rc = network_load_message_funcs(&network, &network_message[i]);
-        assert_int_equal(rc, 0);
-    }
+    int rc = network_load_message_funcs(&network);
+    assert_int_equal(rc, 0);
     for (i = 0; network_message[i].name != NULL; i++) {
         assert_non_null(network_message[i].pack_func);
         assert_non_null(network_message[i].unpack_func);

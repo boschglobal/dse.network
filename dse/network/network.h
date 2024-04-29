@@ -19,7 +19,7 @@
 /* Forward declarations. */
 typedef struct NetworkMessage  NetworkMessage;
 typedef struct NetworkFunction NetworkFunction;
-
+typedef struct MarshalItem     MarshalItem;
 
 /**
 Message Library
@@ -78,13 +78,17 @@ typedef struct NetworkFunction {
 
 
 typedef struct NetworkSignal {
-    const char*  name;
-    char*        signal_name;
+    const char*      name;
+    char*            signal_name;
     /* Annotations. */
-    const char*  member_type;
-    unsigned int buffer_offset;
-    double       init_value;
-
+    const char*      member_type;
+    unsigned int     buffer_offset;
+    double           init_value;  // Initial value (at T=0).
+    bool             internal;
+    double           value;  // Constant value (at T=[0..t])
+    /* Container message: Mux signal. */
+    bool             mux_signal;
+    MarshalItem*     mux_mi;  // Only set if _this_ is the mux signal.
     /* Function pointers (loaded from library). */
     EncodeFuncInt8   encode_func_int8;
     EncodeFuncInt16  encode_func_int16;
@@ -112,6 +116,10 @@ typedef struct NetworkMessage {
     uint32_t       frame_id;
     uint8_t        frame_type;
     NetworkSignal* signals;  // NULL terminated list.
+    /* Container Messages (typically name is <container>_<mux_id>). */
+    const char*    container;  // Name of container message.
+    uint32_t       mux_id;
+    NetworkSignal* mux_signal;  // When set, this _is_ the container message.
     /* Buffer representing the message struct (intermediate object). */
     void*          buffer;
     size_t         buffer_len;
@@ -178,12 +186,15 @@ DLL_PUBLIC int network_load(
 DLL_PUBLIC int network_unload(Network* network);
 
 /* loader.c - Loads functions from the Network shared lib.*/
-DLL_PUBLIC void* network_load_message_lib(Network* network, const char* dll_path);
-DLL_PUBLIC int   network_load_message_funcs(Network* network, NetworkMessage* nm_p);
-DLL_PUBLIC int   network_load_signal_funcs(
-      Network* network, NetworkMessage* nm_p, NetworkSignal* ns_p);
-DLL_PUBLIC void* network_load_function_lib(Network* network, const char* dll_path);
-DLL_PUBLIC int   network_load_function_funcs(Network* network, NetworkMessage* nm_p);
+DLL_PUBLIC void* network_load_message_lib(
+    Network* network, const char* dll_path);
+DLL_PUBLIC int network_load_message_funcs(Network* network);
+DLL_PUBLIC int network_load_signal_funcs(
+    Network* network, NetworkMessage* nm_p, NetworkSignal* ns_p);
+DLL_PUBLIC void* network_load_function_lib(
+    Network* network, const char* dll_path);
+DLL_PUBLIC int network_load_function_funcs(
+    Network* network, NetworkMessage* nm_p);
 
 /* parser.c - Loads functions from the Network shared lib.*/
 DLL_PUBLIC int network_parse(
@@ -198,7 +209,7 @@ DLL_PUBLIC int network_get_signal_names(
 DLL_PUBLIC int network_marshal_signals_to_messages(
     Network* network, MarshalItem* mi);
 DLL_PUBLIC int network_marshal_messages_to_signals(
-    Network* network, MarshalItem* mi);
+    Network* network, MarshalItem* mi, bool signal);
 DLL_PUBLIC void network_pack_messages(Network* network);
 DLL_PUBLIC void network_unpack_messages(Network* network);
 DLL_PUBLIC int  network_unload_marshal_lists(Network* network);

@@ -25,20 +25,27 @@ void* network_load_message_lib(Network* network, const char* dll_path)
     return network->message_lib_handle;
 }
 
-int network_load_message_funcs(Network* network, NetworkMessage* nm_p)
+int network_load_message_funcs(Network* network)
 {
     void* handle = network->message_lib_handle;
     char  func_name[1024];
     /* Loop over messages. */
-    for (int m = 0; nm_p[m].name != NULL; m++) {
+    for (NetworkMessage* msg = network->messages; msg && msg->name; msg++) {
+        // If container is specified, then load functions from the
+        // container message (they are common with this message).
+
         // Pack
-        snprintf(
-            func_name, sizeof(func_name), "%s_%s_pack", network->name, nm_p[m].name);
-        nm_p[m].pack_func = (PackFunc)dlsym(handle, func_name);
+        snprintf(func_name, sizeof(func_name), "%s_%s_pack", network->name,
+            msg->container ? msg->container : msg->name);
+        msg->pack_func = (PackFunc)dlsym(handle, func_name);
+        if (msg->pack_func == NULL)
+            log_error("Network function not loaded (%s)", func_name);
         // Unpack
         snprintf(func_name, sizeof(func_name), "%s_%s_unpack", network->name,
-            nm_p[m].name);
-        nm_p[m].unpack_func = (UnpackFunc)dlsym(handle, func_name);
+            msg->container ? msg->container : msg->name);
+        msg->unpack_func = (UnpackFunc)dlsym(handle, func_name);
+        if (msg->unpack_func == NULL)
+            log_error("Network function not loaded (%s)", func_name);
     }
 
     return 0;
@@ -61,8 +68,11 @@ static void __load_network_funcs(
 
     for (uint32_t i = 0; i < ARRAY_SIZE(net_func); i++) {
         char func_name[1024];
+        // If container is specified, then load functions from the
+        // container message (they are common with this message).
         snprintf(func_name, sizeof(func_name), "%s_%s_%s_%s", network->name,
-            net_msg->name, net_sig->name, net_func[i].name);
+            net_msg->container ? net_msg->container : net_msg->name,
+            net_sig->name, net_func[i].name);
         net_func[i].func = dlsym(handle, func_name);
         if (net_func[i].func == NULL)
             log_error("Network function not loaded (%s)", func_name);
@@ -138,32 +148,29 @@ int network_load_function_funcs(Network* network, NetworkMessage* nm_p)
 {
     if (network->function_lib_handle == NULL) return 1;
 
-    while (nm_p && nm_p->name) {
+    for (NetworkMessage* msg = nm_p; msg && msg->name; msg++) {
         /* Encode functions. */
-        NetworkFunction* ef = nm_p->encode_functions;
+        NetworkFunction* ef = msg->encode_functions;
         while (ef && ef->name) {
             ef->function = dlsym(network->function_lib_handle, ef->name);
             if (ef->function == NULL) {
                 log_fatal("Could not load encode function %s for message %s",
-                    ef->name, nm_p->name);
+                    ef->name, msg->name);
             }
             /* Next function; */
             ef++;
         }
         /* Decode functions. */
-        NetworkFunction* df = nm_p->decode_functions;
+        NetworkFunction* df = msg->decode_functions;
         while (df && df->name) {
             df->function = dlsym(network->function_lib_handle, df->name);
             if (df->function == NULL) {
                 log_fatal("Could not load decode function %s for message %s",
-                    df->name, nm_p->name);
+                    df->name, msg->name);
             }
             /* Next function; */
             df++;
         }
-
-        /* Next message. */
-        nm_p++;
     }
 
     return 0;

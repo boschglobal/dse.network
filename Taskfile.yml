@@ -10,7 +10,92 @@ vars:
   GCC_TAG: main
 
 tasks:
+
   generate:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:generate-{{.DBCFILE}}
+    vars:
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
+      ARXML: '{{.ARXML | default ""}}'
+      DBCDIR:
+        sh: dirname {{.DBCFILE}}
+      OUTDIR: '{{default .DBCDIR .OUTDIR}}'
+      FUNCTION_LIB: '{{.FUNCTION_PATCH | default ""}}'
+      FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
+      SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
+      REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
+      PACKAGE_ARCH: '{{.PACKAGE_ARCH | default ""}}'
+    cmds:
+      - task: "{{if .ARXML}}convert-arxml{{else}}generate-dbc{{end}}"
+    requires:
+      vars: [DBCFILE, SIGNAL, MIMETYPE]
+    sources:
+      - '{{.PWD}}/{{.DBCFILE}}'
+      - '{{.PWD}}/{{.ARXML}}'
+    generates:
+      - '{{.PWD}}/{{.OUTDIR}}/**'
+
+  convert-arxml:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:generate-{{.ARXML}}
+    vars:
+      ARXML: '{{.ARXML | default "ARXML_NOT_SPECIFIED"}}'
+      DBCDIR:
+        sh: dirname {{.ARXML}}
+      OUTDIR: '{{default .DBCDIR .OUTDIR}}'
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      FUNCTION_LIB: '{{.FUNCTION_PATCH | default ""}}'
+      FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
+      SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
+      REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} convert-arxml {{.ARXML}} {{.OUTDIR}}
+      - task: find-dbc
+    requires:
+      vars: [ARXML, SIGNAL, MIMETYPE]
+    sources:
+      - '{{.PWD}}/{{.ARXML}}'
+    generates:
+      - '{{.PWD}}/{{.OUTDIR}}/**'
+
+  find-dbc:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:generate-{{.ARXML}}
+    vars:
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      ARXML: '{{.ARXML | default "ARXML_NOT_SPECIFIED"}}'
+      DBCDIR:
+        sh: dirname {{.ARXML}}
+      OUTDIR: '{{default .DBCDIR .OUTDIR}}'
+      FUNCTION_LIB: '{{.FUNCTION_PATCH | default ""}}'
+      FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
+      SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
+      REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+      DBC:
+        sh: find {{.OUTDIR}} -type f \( -name '*.dbc' -o -name '*.DBC' \)
+    cmds:
+      - for: { var: DBC }
+        task: generate-dbc
+        vars: { DBCFILE: '{{.ITEM}}' }
+    requires:
+      vars: [ARXML, SIGNAL, MIMETYPE]
+    sources:
+      - '{{.PWD}}/{{.ARXML}}'
+    generates:
+      - '{{.PWD}}/{{.OUTDIR}}/**'
+
+  generate-dbc:
     run: always
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.DBCFILE}}
@@ -80,11 +165,12 @@ tasks:
       MESSAGE_LIB_FILE: '{{.OUTDIR}}/{{.MESSAGE_LIB}}'
       IMAGE: '{{.IMAGE | default .GCC_IMAGE}}'
       TAG: '{{.TAG | default .GCC_TAG}}'
+      PACKAGE_ARCH: '{{if eq .PACKAGE_ARCH "linux-x86"}}-mx32{{else}}{{end}}'
     cmds:
       - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
-          gcc -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
+          gcc {{.PACKAGE_ARCH}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
       - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
-          gcc -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
+          gcc {{.PACKAGE_ARCH}} -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
     requires:
       vars: [DBCFILE, OUTDIR]
     sources:
@@ -118,6 +204,7 @@ tasks:
           --network {{.NETWORK_FILE}}
           --metadata {{.METADATA_FILE}}
           --message_lib {{.OUTDIR}}/{{.MESSAGE_LIB}}
+          --style snake_case
           {{.FUNCTION_LIB}}
           {{.LABELS}}
           {{.ANNOTATIONS}}
@@ -191,3 +278,21 @@ tasks:
       - '{{.PWD}}/{{.NETWORK_FILE}}'
     generates:
       - '{{.PWD}}/{{.SIGGROUP_FILE}}'
+
+  set-mimetype:
+    run: when_changed
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:gen-signalgroup-{{.DBCFILE}}
+    vars:
+      SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
+      MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
+      OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
+      TAG: '{{.TAG | default .NETWORK_TAG}}'
+    cmds:
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} set-mimetype
+          --output_directory {{.OUTDIR}}
+          --signal {{.SIGNAL}}
+          --mimetype "{{.MIMETYPE}}"
+    requires:
+      vars: [OUTDIR, SIGNAL, MIMETYPE]

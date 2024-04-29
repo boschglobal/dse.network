@@ -1,17 +1,16 @@
 ---
-kind: Model
-metadata:
-  name: simbus
----
 kind: Stack
 metadata:
-  name: stack
+  name: stub
 spec:
   connection:
     transport:
       redispubsub:
         uri: redis://localhost:6379
         timeout: 60
+  runtime:
+    env:
+      SIMBUS_LOGLEVEL: 3
   models:
     - name: simbus
       model:
@@ -21,10 +20,14 @@ spec:
           expectedModelCount: 1
         - name: network
           expectedModelCount: 1
-    - name: stub_inst
-      uid: 42
+    - name: network
+      uid: 202
       model:
         name: Network
+      runtime:
+        files:
+          - stub/network.yaml
+          - stub/signalgroup.yaml
       metadata:
         network: stub
       channels:
@@ -37,29 +40,6 @@ spec:
           selectors:
             channel: network_vector
 ---
-kind: SignalGroup
+kind: Model
 metadata:
-  name: signal
-  labels:
-    channel: signal_vector
-spec:
-  signals:
-    - signal: average_radius
-    - signal: enable
-    - signal: temperature
-    - signal: schedule_signal
-    - signal: foo_double
----
-kind: SignalGroup
-metadata:
-  name: network
-  labels:
-    channel: network_vector
-  annotations:
-    vector_type: binary
-spec:
-  signals:
-    - signal: can
-      annotations:
-        network: stub
-        mime_type: application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=4; node_id=2; interface_id=3
+  name: simbus

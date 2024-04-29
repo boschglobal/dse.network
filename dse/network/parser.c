@@ -36,6 +36,19 @@ typedef struct FunctionObject {
 } FunctionObject;
 
 
+static uint32_t _get_uint32t(YamlNode* n, const char* p, bool err)
+{
+    uint32_t v = 0;
+    int      rc = dse_yaml_get_uint(n, p, &v);
+    if (rc != 0 && err) {
+        log_error("Missing annotation: %s", p);
+    } else {
+        log_debug("  %s = %u", p, v);
+    }
+    return v;
+}
+
+
 static void* _message_object_generator(
     ModelInstanceSpec* model_instance, void* data)
 {
@@ -79,19 +92,16 @@ static void* _parse_signals(
             &index, _signal_object_generator);
         if (sig_obj == NULL) break;
         if (sig_obj->signal) {
-            unsigned int   value = 0;
             NetworkSignal* sig = calloc(1, sizeof(NetworkSignal));
             sig->signal_name = strdup(sig_obj->signal);
+            /* struct_member_name */
             sig->name = dse_yaml_get_scalar(
                 sig_obj->node, "annotations/struct_member_name");
             log_debug("Scan match on name: %s", sig->name);
-            int rc = dse_yaml_get_uint(
-                sig_obj->node, "annotations/struct_member_offset", &value);
-            if (rc == 0) {
-                sig->buffer_offset = value;
-                log_debug("Scan match on offset: %u", value);
-            } else
-                log_error("Missing struct_member_offset for %s", sig->name);
+            /* struct_member_offset */
+            sig->buffer_offset = _get_uint32t(
+                sig_obj->node, "annotations/struct_member_offset", true);
+            /* struct_member_primitive_type */
             sig->member_type = dse_yaml_get_scalar(
                 sig_obj->node, "annotations/struct_member_primitive_type");
             if (sig->member_type) {
@@ -99,9 +109,17 @@ static void* _parse_signals(
             } else
                 log_error(
                     "Missing struct_member_primitive_type for %s", sig->name);
+            /* init_value */
             dse_yaml_get_double(
                 sig_obj->node, "annotations/init_value", &sig->init_value);
             log_debug("Scan match on init value: %f", sig->init_value);
+            /* Container related (internal / value). */
+            sig->internal = (bool)_get_uint32t(
+                sig_obj->node, "annotations/internal", false);
+            dse_yaml_get_double(
+                sig_obj->node, "annotations/value", &sig->value);
+            sig->mux_signal = (bool)_get_uint32t(
+                sig_obj->node, "annotations/mux_signal", false);
 
             /* Put the Network Message into a HashList (i.e. ordered) */
             hashlist_append(&s_list, sig);
@@ -200,52 +218,42 @@ static void* _parse_messages(
 
             /* Message name */
             msg->name = dse_yaml_get_scalar(msg_obj->node, "message");
-            if (msg->name) {
-                log_debug("Scan match on name: %s", msg->name);
-            }
+            log_debug("Scan match on name: %s", msg->name);
             /* Struct Size */
-            dse_yaml_get_int(msg_obj->node, "annotations/struct_size",
-                (int*)&msg->buffer_len);
-            msg->buffer = calloc(msg->buffer_len, sizeof(char*));
+            msg->buffer_len =
+                _get_uint32t(msg_obj->node, "annotations/struct_size", true);
             if (msg->buffer_len) {
-                log_debug("Scan match on struct_size: %d", msg->buffer_len);
-            } else
-                log_error("Missing struct_size for %s", msg->name);
-            /* Frame ID */
-            const char* id_str = NULL;
-            dse_yaml_get_string(msg_obj->node, "annotations/frame_id", &id_str);
-            if (id_str) {
-                msg->frame_id = (int)strtol(id_str, NULL, 0);
-                log_debug("Scan match on frame_id: %u", msg->frame_id);
-            } else
-                log_error("Missing frame_id %s", msg->name);
-            /* Length */
-            const char* length_str = NULL;
-            dse_yaml_get_string(
-                msg_obj->node, "annotations/frame_length", &length_str);
-            if (length_str) {
-                msg->payload_len = (uint8_t)strtol(length_str, NULL, 0);
-                msg->payload = (char*)calloc(msg->payload_len, sizeof(char*));
-                log_debug("Scan match on frame_length: %u", msg->payload_len);
-            } else
-                log_error("Missing frame_length %s", msg->name);
-            unsigned int frame_type_value;
-            int          rc = dse_yaml_get_uint(
-                         msg_obj->node, "annotations/frame_type", &frame_type_value);
-            if (rc == 0) {
-                msg->frame_type = (uint8_t)frame_type_value;
-                log_debug("Scan match on frame_type: %u", msg->frame_type);
-            } else
-                log_error("Missing frame_type %s", msg->name);
-            /* Cycle Time */
-            const char* cycle_time_str = NULL;
-            dse_yaml_get_string(
-                msg_obj->node, "annotations/cycle_time_ms", &cycle_time_str);
-            if (cycle_time_str) {
-                msg->cycle_time_ms = (uint8_t)strtol(cycle_time_str, NULL, 0);
-                log_debug(
-                    "Scan match on cycle_time_ms: %u", msg->cycle_time_ms);
+                msg->buffer = calloc(msg->buffer_len, sizeof(char*));
             }
+            /* Frame ID */
+            const char* frame_id_str =
+                dse_yaml_get_scalar(msg_obj->node, "annotations/frame_id");
+            if (frame_id_str) {
+                msg->frame_id = strtoul(frame_id_str, NULL, 0);
+                log_debug("Scan match on frame_id: %u", msg->frame_id);
+            } else {
+                log_error("Missing frame_id %s", msg->name);
+            }
+            /* Length */
+            msg->payload_len =
+                _get_uint32t(msg_obj->node, "annotations/frame_length", true);
+            if (msg->payload_len) {
+                msg->payload = (char*)calloc(msg->payload_len, sizeof(char*));
+            }
+            /* Type */
+            msg->frame_type =
+                _get_uint32t(msg_obj->node, "annotations/frame_type", true);
+            /* Cycle Time */
+            msg->cycle_time_ms =
+                _get_uint32t(msg_obj->node, "annotations/cycle_time_ms", false);
+            /* Container */
+            dse_yaml_get_string(
+                msg_obj->node, "annotations/container", &msg->container);
+            log_debug("Scan match on container: %u", msg->container);
+            /* Container Mux Id */
+            msg->mux_id = _get_uint32t(
+                msg_obj->node, "annotations/container_mux_id", false);
+
             /* Parse Signals */
             msg->signals = _parse_signals(
                 model_instance, &(SchemaObject){ .doc = msg_obj->node });
@@ -257,7 +265,7 @@ static void* _parse_messages(
                 &(SchemaObject){ .doc = msg_obj->node }, "functions/decode");
 
             hashlist_append(&m_list, msg);
-            hashmap_set(&m_map, id_str, msg);
+            hashmap_set(&m_map, frame_id_str, msg);
         }
 
         free(msg_obj);

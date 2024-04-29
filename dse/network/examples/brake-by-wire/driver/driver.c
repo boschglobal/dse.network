@@ -8,6 +8,9 @@
 #include <dse/logger.h>
 
 
+#define UNUSED(x)     ((void)x)
+
+
 typedef struct {
     ModelDesc model;
     /* Pedal Interface (HMI). */
@@ -49,6 +52,7 @@ ModelDesc* model_create(ModelDesc* model)
 int model_step(ModelDesc* model, double* model_time, double stop_time)
 {
     DriverModelDesc* m = (DriverModelDesc*)model;
+    UNUSED(m);
 
     // TODO operate the brake pedal
 
