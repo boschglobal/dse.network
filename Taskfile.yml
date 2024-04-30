@@ -28,6 +28,8 @@ tasks:
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
       PACKAGE_ARCH: '{{.PACKAGE_ARCH | default ""}}'
+      FILTER: '{{.FILTER | default ""}}'
+      CYCLE_TIME: '{{.CYCLE_TIME | default ""}}'
     cmds:
       - task: "{{if .ARXML}}convert-arxml{{else}}generate-dbc{{end}}"
     requires:
@@ -137,10 +139,12 @@ tasks:
       DBCNAME:
         sh: basename {{.DBCFILE}} .dbc
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
+      FILTER: '{{.FILTER | default ""}}'
+      CYCLE_TIME: '{{.CYCLE_TIME | default ""}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
       TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-code {{.DBCFILE}} {{.OUTDIR}}
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-code {{.DBCFILE}} {{.OUTDIR}} --filter {{.FILTER}} --cycle_time {{.CYCLE_TIME}}
     requires:
       vars: [DBCFILE, OUTDIR]
     sources:

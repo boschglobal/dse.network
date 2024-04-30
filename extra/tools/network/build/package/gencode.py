@@ -4,6 +4,7 @@
 
 import os
 import re
+import json
 import yaml
 import argparse
 import cantools
@@ -25,13 +26,18 @@ def parse_arguments():
     parser.add_argument("--node", help="Node name")
     parser.add_argument("--keepdbcnames", action="store_true", help="Keep DBC names")
     parser.add_argument("--generate-fuzzer", action="store_true", help="Generate fuzzer code")
+    parser.add_argument('--filter', nargs='*', help='Filters the frames based on frame ID.')
+    parser.add_argument('--cycle_time', help='missing cycle time in dictionary format with key being frame ID . ex- "{ ""400"": ""20"", ""530"":""30"" }"')
     return parser.parse_args()
 
-def scan_messages(dbc_file, out_path):
+def scan_messages(dbc_file, out_path, filter, cycle_time):
     outfile = os.path.join(out_path, os.path.basename(os.path.splitext(dbc_file)[0]) + '.yaml')
     db = cantools.database.load_file(dbc_file)
     frames = {}
+    cycle_time = json.loads(cycle_time) if cycle_time else {}
     for message in db.messages:
+        if str(message.frame_id) in filter:
+            continue
         isContainer = False
         if len(message.signal_groups) > 0 :
             isContainer = True
@@ -44,6 +50,8 @@ def scan_messages(dbc_file, out_path):
             'is_extended_frame': message.is_extended_frame,
             'is_container': isContainer
         }
+        if str(message.frame_id) in cycle_time.keys():
+            frames[messageName]['cycle_time_ms'] = cycle_time[str(message.frame_id)]
         if isContainer :
             for mux_id, signals in message.signal_tree[0]['Header_ID'].items():
                 frames[messageName + '_' + hex(mux_id)] = {
@@ -56,6 +64,7 @@ def scan_messages(dbc_file, out_path):
                     'is_extended_frame': message.is_extended_frame,
                     'signals' : [camel_to_snake_case(s) for s in signals]
         }
+
     with open(outfile, 'w') as f:
         yaml.dump({'frames': frames}, f)
 
@@ -71,7 +80,7 @@ def camel_to_snake_case(value):
 def main():
     args = parse_arguments()
     _do_generate_c_source(args)
-    scan_messages(args.infile, args.output_directory)
+    scan_messages(args.infile, args.output_directory, args.filter, args.cycle_time)
 
 if __name__ == "__main__":
     main()
