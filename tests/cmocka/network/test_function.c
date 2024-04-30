@@ -118,10 +118,11 @@ void test_function_decode(void** state)
     nm_p->unpack_func(nm_p->buffer, payload, length);
     nm_p->update_signals = true;
     network_function_apply_decode(network);
+    assert_true(nm_p->update_signals);
     network_marshal_messages_to_signals(network, network->marshal_list, false);
 
     /* Check the signals are set. */
-    assert_true(nm_p->update_signals);
+    assert_false(nm_p->update_signals);
     assert_double_equal(network->signal_vector[4], 56.0, 0.0);
     assert_double_equal(network->signal_vector[5], 1.0, 0.0);
     assert_double_equal(network->signal_vector[6], 5.0, 0.0);

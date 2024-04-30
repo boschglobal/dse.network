@@ -468,6 +468,12 @@ int network_marshal_messages_to_signals(
         if (single) break; /* Only process the single MI. */
         mi++;
     }
+
+    /* Reset the message processing flags. */
+    for (NetworkMessage* nm = network->messages; nm && nm->name; nm++) {
+        nm->update_signals = false;
+    }
+
     return 0;
 }
 

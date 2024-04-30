@@ -176,6 +176,10 @@ void test_engine_marshal_network_message_to_signal(void** state)
 
     set_update_signals(network->marshal_list, true);
     network_marshal_messages_to_signals(network, network->marshal_list, false);
+    for (NetworkMessage* m = network->messages; m && m->name; m++) {
+        assert_false(m->update_signals);
+    }
+
 
     /* Check the signal vector. */
     assert_int_equal(network->signal_vector[0], 1);
