@@ -17,18 +17,15 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 
-int network_load_marshal_lists(
-    Network* network, ModelInstanceSpec* model_instance)
+int network_load_marshal_lists(Network* n)
 {
-    UNUSED(model_instance);
-    assert(network);
-    assert(network->name);
+    assert(n);
+    assert(n->name);
 
     HashList m_list;
     hashlist_init(&m_list, 100);
 
-    NetworkMessage* nm = network->messages;
-    while (nm && nm->name) {
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
         if (nm->buffer_len == 0) {
             /* Next message. */
             log_error("Message buffer_len not set!");
@@ -36,41 +33,32 @@ int network_load_marshal_lists(
             continue;
         }
         /* Signals. */
-        NetworkSignal* ns = nm->signals;
-        while (ns && ns->name) {
+        for (NetworkSignal* ns = nm->signals; ns && ns->name; ns++) {
             /* Create an MI object. */
             MarshalItem* mi = calloc(1, sizeof(MarshalItem));
             mi->signal = ns;
             mi->message = nm;
             log_debug("MarshalItem, name: %s", ns->signal_name);
             hashlist_append(&m_list, mi);
-
-            /* Next signal. */
-            ns++;
         }
-        /* Next message. */
-        nm++;
     }
 
     /* Convert the HashList to a NULL terminated list. */
     size_t count = hashlist_length(&m_list);
-    network->marshal_list = calloc(count + 1, sizeof(MarshalItem));
+    n->marshal_list = calloc(count + 1, sizeof(MarshalItem));
     for (uint32_t i = 0; i < count; i++) {
-        memcpy(&network->marshal_list[i], hashlist_at(&m_list, i),
-            sizeof(MarshalItem));
+        memcpy(
+            &n->marshal_list[i], hashlist_at(&m_list, i), sizeof(MarshalItem));
         free(hashlist_at(&m_list, i));
     }
     hashlist_destroy(&m_list);
 
     /* Set any mux_mi references. */
-    MarshalItem* mi_p = network->marshal_list;
-    while (mi_p->signal) {
-        if (mi_p->signal->mux_signal) {
-            mi_p->signal->mux_mi = mi_p;
-            mi_p->message->mux_signal = mi_p->signal;
+    for (MarshalItem* mi = n->marshal_list; mi && mi->signal; mi++) {
+        if (mi->signal->mux_signal) {
+            mi->signal->mux_mi = mi;
+            mi->message->mux_signal = mi->signal;
         }
-        /* Next item? */
-        mi_p++;
     }
 
     return 0;
@@ -82,39 +70,39 @@ int network_get_signal_names(
 {
     int          count = 0;
     const char** names = NULL;
-    MarshalItem* mi_p;
+    MarshalItem* mi;
 
     /* Default the return values (passed by reference). */
     *signal_names = NULL;
     *signal_count = 0;
 
     /* Count the signals first. */
-    mi_p = ml;
-    while (mi_p->signal) {
+    mi = ml;
+    while (mi->signal) {
         count++;
         /* Next item? */
-        mi_p++;
+        mi++;
     }
 
     /* Allocate the return values, caller to free. */
     names = calloc(count + 1, sizeof(const char*));
-    mi_p = ml;
+    mi = ml;
     int    name_idx = 0;
     size_t sv_offset = 0;
-    while (mi_p->signal) {
-        NetworkSignal* ns = mi_p->signal;
+    while (mi->signal) {
+        NetworkSignal* ns = mi->signal;
         if (ns->internal) {
             /* Internal signal, prevent matching with ModelC signals.*/
             names[name_idx] = "";
         } else {
             names[name_idx] = ns->signal_name;
         }
-        mi_p->signal_vector_index = sv_offset;
+        mi->signal_vector_index = sv_offset;
         name_idx++;
         sv_offset++;
 
         /* Next item? */
-        mi_p++;
+        mi++;
     }
     *signal_names = names;
     *signal_count = count;
@@ -123,12 +111,12 @@ int network_get_signal_names(
 }
 
 
-int network_marshal_signals_to_messages(Network* network, MarshalItem* mi)
+int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
 {
-    if (network == NULL || mi == NULL) return 1;
+    if (n == NULL || mi == NULL) return 1;
 
     while (mi->signal) {
-        double _signal_value = network->signal_vector[mi->signal_vector_index];
+        double _signal_value = n->signal_vector[mi->signal_vector_index];
         if (mi->signal->internal && mi->message->container) {
             /* Internal signals on container messages take a constant value. */
             _signal_value = mi->signal->value;
@@ -284,9 +272,9 @@ int network_marshal_signals_to_messages(Network* network, MarshalItem* mi)
 
 
 int network_marshal_messages_to_signals(
-    Network* network, MarshalItem* mi, bool single)
+    Network* n, MarshalItem* mi, bool single)
 {
-    if (network == NULL || mi == NULL) return 1;
+    if (n == NULL || mi == NULL) return 1;
     while (mi->signal) {
         log_trace(
             "MI Signal: frame_id=%d, update_signals=%d, index=%d, type=%s",
@@ -304,13 +292,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int8(
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int8_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((uint8_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(uint8_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -321,13 +309,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int16((
                     (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int16_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((uint16_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(uint16_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -338,13 +326,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int32((
                     (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int32_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((uint32_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(uint32_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -355,13 +343,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int64((
                     (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int64_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((uint64_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(uint64_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -372,12 +360,12 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int8(
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int8_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int8_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -388,13 +376,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int16((
                     (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int16_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((int16_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(int16_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -405,13 +393,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int32((
                     (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int32_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((int32_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(int32_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -422,13 +410,13 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_int64((
                     (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int64_t)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((int64_t*)
                             mi->message->buffer)[(mi->signal->buffer_offset) /
                                                  sizeof(int64_t)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -439,12 +427,12 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_float((
                     (float*)mi->message
                         ->buffer)[(mi->signal->buffer_offset) / sizeof(float)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((float*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                   sizeof(float)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -455,12 +443,12 @@ int network_marshal_messages_to_signals(
                 double _v = mi->signal->decode_func_double(
                     ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(double)]);
-                network->signal_vector[mi->signal_vector_index] = _v;
+                n->signal_vector[mi->signal_vector_index] = _v;
 
                 log_debug("calling decode_func (%d -> %f): %f %s",
                     ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(double)],
-                    _v, network->signal_vector[mi->signal_vector_index],
+                    _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
         }
@@ -470,7 +458,7 @@ int network_marshal_messages_to_signals(
     }
 
     /* Reset the message processing flags. */
-    for (NetworkMessage* nm = network->messages; nm && nm->name; nm++) {
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
         nm->update_signals = false;
     }
 
@@ -478,60 +466,52 @@ int network_marshal_messages_to_signals(
 }
 
 
-void network_pack_messages(Network* network)
+void network_pack_messages(Network* n)
 {
-    assert(network);
+    assert(n);
 
     /* Loop over messages and call pack_func. */
-    NetworkMessage* nm_p = network->messages;
-    while (nm_p->name) {
-        if (nm_p->pack_func) {
-            nm_p->pack_func(nm_p->payload, nm_p->buffer, nm_p->payload_len);
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (nm->pack_func) {
+            nm->pack_func(nm->payload, nm->buffer, nm->payload_len);
 
             /* Calculate checksum for the current buffer. */
-            uint32_t payload_checksum = simbus_generate_uid_hash(
-                (uint8_t*)nm_p->buffer, nm_p->buffer_len);
+            uint32_t payload_checksum =
+                simbus_generate_uid_hash((uint8_t*)nm->buffer, nm->buffer_len);
 
             /* Check if the payload_checksum is different. */
-            if (payload_checksum != nm_p->buffer_checksum) {
-                if (nm_p->cycle_time_ms) {
+            if (payload_checksum != nm->buffer_checksum) {
+                if (nm->cycle_time_ms) {
                 } else {
-                    nm_p->needs_tx = true;
+                    nm->needs_tx = true;
                     log_debug("encode path checksum %u", payload_checksum);
-                    nm_p->buffer_checksum = payload_checksum;
+                    nm->buffer_checksum = payload_checksum;
                 }
             } else {
-                nm_p->needs_tx = false;
+                nm->needs_tx = false;
             }
         }
-
-        /* Next message. */
-        nm_p++;
     }
 }
 
 
-void network_unpack_messages(Network* network)
+void network_unpack_messages(Network* n)
 {
-    assert(network);
+    assert(n);
 
     /* Loop over messages and call unpack_func. */
-    NetworkMessage* nm_p = network->messages;
-    while (nm_p->name) {
-        if (nm_p->unpack_func) {
-            nm_p->unpack_func(nm_p->buffer, nm_p->payload, nm_p->payload_len);
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (nm->unpack_func) {
+            nm->unpack_func(nm->buffer, nm->payload, nm->payload_len);
         }
-
-        /* Next message. */
-        nm_p++;
     }
 }
 
 
-int network_unload_marshal_lists(Network* network)
+int network_unload_marshal_lists(Network* n)
 {
-    if (network) {
-        if (network->marshal_list) free(network->marshal_list);
+    if (n) {
+        if (n->marshal_list) free(n->marshal_list);
     }
 
     return 0;

@@ -114,6 +114,7 @@ void test_network_load_signal_funcs(void** state)
         { .name = "float_types", .signals = network_float_signals },
         { .name = NULL },
     };
+    network.messages = &network_message[0];
 
 
     /* Load the DLL. */
@@ -143,8 +144,7 @@ void test_network_load_signal_funcs(void** state)
     assert_int_equal(i, ARRAY_SIZE(network_message1_signals) - 1);
     assert_int_equal(j, ARRAY_SIZE(network_message2_signals) - 1);
 
-    int rc = network_load_signal_funcs(
-        &network, network_message, network_message1_signals);
+    int rc = network_load_signal_funcs(&network);
     assert_int_equal(rc, 0);
 
     for (i = 0; network_message1_signals[i].member_type != NULL; i++) {
@@ -213,6 +213,7 @@ void test_network_load_functions(void** state)
         },
         { .name = NULL },
     };
+    network.messages = &network_message[0];
 
     /* Load the DLL. */
     void* handle =
@@ -222,7 +223,7 @@ void test_network_load_functions(void** state)
     assert_ptr_equal(handle, network.function_lib_handle);
 
     /* Load the message functions. */
-    int rc = network_load_function_funcs(&network, network_message);
+    int rc = network_load_function_funcs(&network);
     assert_int_equal(rc, 0);
     assert_null(network_message[0].encode_functions);
     assert_null(network_message[0].decode_functions);

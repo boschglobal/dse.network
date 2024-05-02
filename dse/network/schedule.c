@@ -13,66 +13,67 @@
 #include <dse/clib/util/yaml.h>
 
 
-void network_schedule_reset(Network* net)
+void network_schedule_reset(Network* n)
 {
-    if (net->messages == NULL) return;
+    if (n->messages == NULL) return;
 
-    if (net->schedule_list) free(net->schedule_list);
+    if (n->schedule_list) free(n->schedule_list);
     HashList n_list;
     hashlist_init(&n_list, 100);
 
-    for (NetworkMessage* m = net->messages; m->name; m++) {
-        if (m->cycle_time_ms) {
-            NetworkScheduleItem* ns = calloc(1, sizeof(NetworkScheduleItem));
-            ns->message = m;
-            hashlist_append(&n_list, ns);
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (nm->cycle_time_ms) {
+            NetworkScheduleItem* nsi = calloc(1, sizeof(NetworkScheduleItem));
+            nsi->message = nm;
+            hashlist_append(&n_list, nsi);
         }
     }
     size_t count = hashlist_length(&n_list);
-    net->schedule_list = calloc(count + 1, sizeof(NetworkScheduleItem));
+    n->schedule_list = calloc(count + 1, sizeof(NetworkScheduleItem));
     for (uint32_t i = 0; i < count; i++) {
-        memcpy(&net->schedule_list[i], hashlist_at(&n_list, i),
+        memcpy(&n->schedule_list[i], hashlist_at(&n_list, i),
             sizeof(NetworkScheduleItem));
         free(hashlist_at(&n_list, i));
     }
     hashlist_destroy(&n_list);
 
     /* Reset the tick counter. */
-    net->tick = 0;
+    n->tick = 0;
 }
 
 
-void network_schedule_tick(Network* net)
+void network_schedule_tick(Network* n)
 {
-    if (net->schedule_list == NULL) {
+    if (n->schedule_list == NULL) {
         /* Caller forgot to call runnable_schedule_reset()? */
         log_error("No scheduled tasks!");
-        net->tick++; /* Tick so caller does not hang. */
+        n->tick++; /* Tick so caller does not hang. */
         return;
     }
     /* Current tick. */
-    for (NetworkScheduleItem* s = net->schedule_list; s->message; s++) {
-        if (net->tick == 0) {
+    for (NetworkScheduleItem* nsi = n->schedule_list; nsi && nsi->message;
+         nsi++) {
+        if (n->tick == 0) {
         } else {
             /* Decrement the alarm counter. */
-            if (s->alarm) {
-                s->alarm--;
+            if (nsi->alarm) {
+                nsi->alarm--;
                 /* Transition to 0? */
-                if (s->alarm == 0) {
+                if (nsi->alarm == 0) {
                     /* Alarm fired, reset checksum.*/
-                    if (s->message->cycle_time_ms) {
-                        s->message->buffer_checksum = 0;
-                        s->message->needs_tx = true;
+                    if (nsi->message->cycle_time_ms) {
+                        nsi->message->buffer_checksum = 0;
+                        nsi->message->needs_tx = true;
                     }
                 }
             }
         }
         /* Reset the alarm counter. */
-        if (s->alarm == 0) {
-            s->alarm = s->message->cycle_time_ms;
+        if (nsi->alarm == 0) {
+            nsi->alarm = nsi->message->cycle_time_ms;
         }
     }
 
     /* Next tick. */
-    net->tick++;
+    n->tick++;
 }

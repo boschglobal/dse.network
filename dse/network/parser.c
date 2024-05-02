@@ -49,10 +49,9 @@ static uint32_t _get_uint32t(YamlNode* n, const char* p, bool err)
 }
 
 
-static void* _message_object_generator(
-    ModelInstanceSpec* model_instance, void* data)
+static void* _message_object_generator(ModelInstanceSpec* mi, void* data)
 {
-    UNUSED(model_instance);
+    UNUSED(mi);
     YamlNode* n = dse_yaml_find_node((YamlNode*)data, "message");
     if (n && n->scalar) {
         MessageObject* o = calloc(1, sizeof(MessageObject));
@@ -64,10 +63,9 @@ static void* _message_object_generator(
 }
 
 
-static void* _signal_object_generator(
-    ModelInstanceSpec* model_instance, void* data)
+static void* _signal_object_generator(ModelInstanceSpec* mi, void* data)
 {
-    UNUSED(model_instance);
+    UNUSED(mi);
     YamlNode* n = dse_yaml_find_node((YamlNode*)data, "signal");
     if (n && n->scalar) {
         SignalObject* o = calloc(1, sizeof(SignalObject));
@@ -79,8 +77,7 @@ static void* _signal_object_generator(
 }
 
 
-static void* _parse_signals(
-    ModelInstanceSpec* model_instance, SchemaObject* object)
+static void* _parse_signals(ModelInstanceSpec* mi, SchemaObject* object)
 {
     uint32_t      index = 0;
     SignalObject* sig_obj;
@@ -88,8 +85,8 @@ static void* _parse_signals(
     hashlist_init(&s_list, 100);
 
     do {
-        sig_obj = schema_object_enumerator(model_instance, object, "signals",
-            &index, _signal_object_generator);
+        sig_obj = schema_object_enumerator(
+            mi, object, "signals", &index, _signal_object_generator);
         if (sig_obj == NULL) break;
         if (sig_obj->signal) {
             NetworkSignal* sig = calloc(1, sizeof(NetworkSignal));
@@ -142,10 +139,9 @@ static void* _parse_signals(
 }
 
 
-static void* _function_object_generator(
-    ModelInstanceSpec* model_instance, void* data)
+static void* _function_object_generator(ModelInstanceSpec* mi, void* data)
 {
-    UNUSED(model_instance);
+    UNUSED(mi);
     YamlNode* n = dse_yaml_find_node((YamlNode*)data, "function");
     if (n && n->scalar) {
         FunctionObject* o = calloc(1, sizeof(FunctionObject));
@@ -158,7 +154,7 @@ static void* _function_object_generator(
 
 
 static void* _parse_functions(
-    ModelInstanceSpec* model_instance, SchemaObject* object, const char* path)
+    ModelInstanceSpec* mi, SchemaObject* object, const char* path)
 {
     uint32_t        index = 0;
     FunctionObject* func_obj;
@@ -167,7 +163,7 @@ static void* _parse_functions(
 
     do {
         func_obj = schema_object_enumerator(
-            model_instance, object, path, &index, _function_object_generator);
+            mi, object, path, &index, _function_object_generator);
 
         if (func_obj == NULL) break;
         if (func_obj->function) {
@@ -198,8 +194,7 @@ static void* _parse_functions(
 }
 
 
-static void* _parse_messages(
-    ModelInstanceSpec* model_instance, SchemaObject* object)
+static void* _parse_messages(ModelInstanceSpec* mi, SchemaObject* object)
 {
     uint32_t       index = 0;
     MessageObject* msg_obj;
@@ -209,8 +204,8 @@ static void* _parse_messages(
     hashlist_init(&m_list, 100);
 
     do {
-        msg_obj = schema_object_enumerator(model_instance, object,
-            "spec/messages", &index, _message_object_generator);
+        msg_obj = schema_object_enumerator(
+            mi, object, "spec/messages", &index, _message_object_generator);
         if (msg_obj == NULL) break;
 
         if (msg_obj->message) {
@@ -255,13 +250,13 @@ static void* _parse_messages(
                 msg_obj->node, "annotations/container_mux_id", false);
 
             /* Parse Signals */
-            msg->signals = _parse_signals(
-                model_instance, &(SchemaObject){ .doc = msg_obj->node });
+            msg->signals =
+                _parse_signals(mi, &(SchemaObject){ .doc = msg_obj->node });
 
             /* Parse Functions */
-            msg->encode_functions = _parse_functions(model_instance,
+            msg->encode_functions = _parse_functions(mi,
                 &(SchemaObject){ .doc = msg_obj->node }, "functions/encode");
-            msg->decode_functions = _parse_functions(model_instance,
+            msg->decode_functions = _parse_functions(mi,
                 &(SchemaObject){ .doc = msg_obj->node }, "functions/decode");
 
             hashlist_append(&m_list, msg);
@@ -286,55 +281,54 @@ static void* _parse_messages(
 }
 
 
-static int _network_match_handler(
-    ModelInstanceSpec* model_instance, SchemaObject* object)
+static int _network_match_handler(ModelInstanceSpec* mi, SchemaObject* object)
 {
-    Network* network = object->data;
-    network->doc = object->doc;
+    Network* n = object->data;
+    n->doc = object->doc;
     unsigned int value = 0;
     /* Parse metadata. */
-    dse_yaml_get_string(network->doc, "metadata/annotations/message_lib",
-        &network->message_lib_path);
-    dse_yaml_get_string(network->doc, "metadata/annotations/function_lib",
-        &network->function_lib_path);
-    log_debug("Network Message Lib Path: %s", network->message_lib_path);
-    log_debug("Network Function Lib Path: %s", network->function_lib_path);
-    if (network->message_lib_path == NULL) return 1;
+    dse_yaml_get_string(
+        n->doc, "metadata/annotations/message_lib", &n->message_lib_path);
+    dse_yaml_get_string(
+        n->doc, "metadata/annotations/function_lib", &n->function_lib_path);
+    log_debug("Network Message Lib Path: %s", n->message_lib_path);
+    log_debug("Network Function Lib Path: %s", n->function_lib_path);
+    if (n->message_lib_path == NULL) return 1;
 
     /* Node ID */
-    dse_yaml_get_uint(network->doc, "metadata/annotations/node_id", &value);
-    network->node_id = value;
+    dse_yaml_get_uint(n->doc, "metadata/annotations/node_id", &value);
+    n->node_id = value;
     log_debug("Scan match on node id: %u", value);
     /* Interface ID */
     value = 0;
-    dse_yaml_get_uint(
-        network->doc, "metadata/annotations/interface_id", &value);
-    network->interface_id = value;
+    dse_yaml_get_uint(n->doc, "metadata/annotations/interface_id", &value);
+    n->interface_id = value;
     log_debug("Scan match on interface id: %u", value);
     /* Bus ID */
     value = 0;
-    dse_yaml_get_uint(network->doc, "metadata/annotations/bus_id", &value);
-    network->bus_id = value;
+    dse_yaml_get_uint(n->doc, "metadata/annotations/bus_id", &value);
+    n->bus_id = value;
     log_debug("Scan match on bus id: %u", value);
 
     /* Enumerate over the messages of the Network doc. */
-    network->messages = _parse_messages(model_instance, object);
+    n->messages = _parse_messages(mi, object);
 
     return 0;
 }
 
 
-int network_parse(Network* network, ModelInstanceSpec* model_instance)
+int network_parse(Network* n, ModelInstanceSpec* mi)
 {
-    assert(network->name);
+    assert(n);
+    assert(n->name);
 
     /* Parse each type definition, and search for declarations. */
     SchemaObjectSelector selector = {
         .kind = "Network",
-        .name = network->name,
-        .data = network,
+        .name = n->name,
+        .data = n,
     };
-    schema_object_search(model_instance, &selector, _network_match_handler);
+    schema_object_search(mi, &selector, _network_match_handler);
 
     return 0;
 }
@@ -351,10 +345,8 @@ static void _free_message(NetworkMessage* message)
 
 static void _free_signals(NetworkSignal* signals)
 {
-    NetworkSignal* ns_p = signals;
-    while (ns_p && ns_p->signal_name) {
-        free(ns_p->signal_name);
-        ns_p++;
+    for (NetworkSignal* ns = signals; ns && ns->signal_name; ns++) {
+        free(ns->signal_name);
     }
     if (signals) free(signals);
 }
@@ -362,29 +354,25 @@ static void _free_signals(NetworkSignal* signals)
 
 static void _free_functions(NetworkFunction* functions)
 {
-    NetworkFunction* nt_f = functions;
-    while (nt_f && nt_f->name) {
-        free(nt_f->name);
-        if (nt_f->data) free(nt_f->data);
-        nt_f++;
+    for (NetworkFunction* nf = functions; nf && nf->name; nf++) {
+        free(nf->name);
+        if (nf->data) free(nf->data);
     }
     if (functions) free(functions);
 }
 
 
-int network_unload_parser(Network* network)
+int network_unload_parser(Network* n)
 {
-    if (network) {
-        NetworkMessage* nm_p = network->messages;
-        while (nm_p && nm_p->name) {
-            _free_signals(nm_p->signals);
-            _free_message(nm_p);
-            _free_functions(nm_p->encode_functions);
-            _free_functions(nm_p->decode_functions);
-            nm_p++;
-        }
-        if (network->messages) free(network->messages);
+    if (n == NULL) return 0;
+
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        _free_signals(nm->signals);
+        _free_message(nm);
+        _free_functions(nm->encode_functions);
+        _free_functions(nm->decode_functions);
     }
+    if (n->messages) free(n->messages);
 
     return 0;
 }

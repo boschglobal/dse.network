@@ -9,40 +9,40 @@
 #include <dse/network/network.h>
 
 
-const char* network_function_annotation(
-    NetworkFunction* function, const char* name)
+const char* network_function_annotation(NetworkFunction* nf, const char* name)
 {
-    if (function->annotations == NULL) return NULL;
-    return dse_yaml_get_scalar(function->annotations, name);
+    if (nf->annotations == NULL) return NULL;
+    return dse_yaml_get_scalar(nf->annotations, name);
 }
 
 
-int network_function_apply_encode(Network* network)
+int network_function_apply_encode(Network* n)
 {
-    assert(network);
+    assert(n);
 
-    for (NetworkMessage* nm_p = network->messages; nm_p->name; nm_p++) {
-        if (nm_p->needs_tx == false) continue;
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (nm->needs_tx == false) continue;
 
         uint32_t payload_checksum =
-        simbus_generate_uid_hash(nm_p->payload, nm_p->payload_len);
+            simbus_generate_uid_hash(nm->payload, nm->payload_len);
 
-        for (NetworkFunction* nt_f = nm_p->encode_functions; nt_f->name;
-             nt_f++) {
-            if (nt_f->function) {
-                int rc = nt_f->function(nt_f, nm_p->payload, nm_p->payload_len);
+        for (NetworkFunction* nf = nm->encode_functions; nf && nf->name; nf++) {
+            if (nf->function) {
+                int rc = nf->function(nf, nm->payload, nm->payload_len);
                 if (rc)
                     log_fatal("error from message function (rc=%d): %s:%s", rc,
-                        nm_p->name, nt_f->name);
+                        nm->name, nf->name);
             }
         }
 
-        if (simbus_generate_uid_hash(nm_p->payload, nm_p->payload_len) != payload_checksum) {
+        if (simbus_generate_uid_hash(nm->payload, nm->payload_len) !=
+            payload_checksum) {
             /* Trigger update of signals based on changed payload. */
-            nm_p->update_signals = true;
-			nm_p->unpack_func(nm_p->buffer, nm_p->payload, nm_p->payload_len);
+            nm->update_signals = true;
+            nm->unpack_func(nm->buffer, nm->payload, nm->payload_len);
             /* Set the buffer checksum to prevent subsequent Tx. */
-            nm_p->buffer_checksum = simbus_generate_uid_hash(nm_p->buffer, nm_p->buffer_len);
+            nm->buffer_checksum =
+                simbus_generate_uid_hash(nm->buffer, nm->buffer_len);
         }
     }
 
@@ -50,28 +50,27 @@ int network_function_apply_encode(Network* network)
 }
 
 
-int network_function_apply_decode(Network* network)
+int network_function_apply_decode(Network* n)
 {
-    assert(network);
+    assert(n);
 
-    for (NetworkMessage* nm_p = network->messages; nm_p->name; nm_p++) {
-        if (nm_p->update_signals == false) {
+    for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (nm->update_signals == false) {
             /* No incoming message, don't call functions. */
             continue;
         }
-        for (NetworkFunction* nt_f = nm_p->decode_functions; nt_f->name;
-             nt_f++) {
-            if (nt_f->function) {
-                int rc = nt_f->function(nt_f, nm_p->payload, nm_p->payload_len);
+        for (NetworkFunction* nf = nm->decode_functions; nf && nf->name; nf++) {
+            if (nf->function) {
+                int rc = nf->function(nf, nm->payload, nm->payload_len);
                 switch (rc) {
                 case 0:
                     break;
                 case EBADMSG:
-                    nm_p->update_signals = false;
+                    nm->update_signals = false;
                     break;
                 default:
                     log_fatal("error from message function (rc=%d): %s:%s", rc,
-                        nm_p->name, nt_f->name);
+                        nm->name, nf->name);
                 }
             }
         }

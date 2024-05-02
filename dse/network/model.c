@@ -47,12 +47,9 @@ ModelDesc* model_create(ModelDesc* model)
     memcpy(m, model, sizeof(ModelDesc));
 
     /* Locate SignalVectors. */
-    SignalVector* sv = m->model.sv;
-    while (sv && sv->name) {
+    for (SignalVector* sv = m->model.sv; sv && sv->name; sv++) {
         if (strcmp(sv->alias, "signal_channel") == 0) m->sv_signal = sv;
         if (strcmp(sv->alias, "network_channel") == 0) m->sv_network = sv;
-        /* Next signal vector. */
-        sv++;
     }
     if (m->sv_signal == NULL) log_fatal("Signal channel not found!");
     if (m->sv_network == NULL) log_fatal("Network channel not found!");
@@ -102,10 +99,10 @@ ModelDesc* model_create(ModelDesc* model)
     /* Print the parsed network. */
     log_notice("  Network Configuration:");
     uint32_t sig_idx = 0;
-    for (NetworkMessage* msg = m->network.messages; msg->name; msg++) {
-        log_notice("    %s [frame_id 0x%x, len %d]", msg->name, msg->frame_id,
-            msg->buffer_len);
-        for (NetworkSignal* sig = msg->signals;
+    for (NetworkMessage* nm = m->network.messages; nm && nm->name; nm++) {
+        log_notice("    %s [frame_id 0x%x, len %d]", nm->name, nm->frame_id,
+            nm->buffer_len);
+        for (NetworkSignal* sig = nm->signals;
              sig->name && sig_idx < m->network.signal_count; sig++) {
             const char* signal_name = m->network.signal_name[sig_idx++];
             log_notice("        %s [%s]", signal_name, sig->name);
@@ -134,14 +131,11 @@ ModelDesc* model_create(ModelDesc* model)
     }
 
     /* Set the SignalVector initial value. */
-    MarshalItem* mi_p = m->network.marshal_list;
-    while (mi_p->signal) {
-        size_t sig_idx = mi_p->signal_vector_index;
-        m->network.signal_vector[sig_idx] = mi_p->signal->init_value;
-        log_debug("signal: %s init_value %f", mi_p->signal->name,
-            mi_p->signal->init_value);
-        /* Next item? */
-        mi_p++;
+    for (MarshalItem* mi = m->network.marshal_list; mi && mi->signal; mi++) {
+        size_t sig_idx = mi->signal_vector_index;
+        m->network.signal_vector[sig_idx] = mi->signal->init_value;
+        log_debug("signal: %s init_value %f", mi->signal->name,
+            mi->signal->init_value);
     }
     for (uint32_t i = 0; i < m->sv_signal->count; i++) {
         if (m->__sr_map[i].active == false) continue;
@@ -153,9 +147,9 @@ ModelDesc* model_create(ModelDesc* model)
     /* Trigger checksum calculation. */
     network_marshal_signals_to_messages(&m->network, m->network.marshal_list);
     network_pack_messages(&m->network);
-    for (NetworkMessage* msg = m->network.messages; msg->name; msg++) {
-        msg->needs_tx = false;
-        log_debug("message: %s checksum %d", msg->name, msg->buffer_checksum);
+    for (NetworkMessage* nm = m->network.messages; nm && nm->name; nm++) {
+        nm->needs_tx = false;
+        log_debug("message: %s checksum %d", nm->name, nm->buffer_checksum);
     }
 
     /* Return the extended object. */
