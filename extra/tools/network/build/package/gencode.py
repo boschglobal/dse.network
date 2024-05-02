@@ -36,7 +36,7 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
     frames = {}
     cycle_time = json.loads(cycle_time) if cycle_time else {}
     for message in db.messages:
-        if str(message.frame_id) in filter:
+        if filter is not None and str(message.frame_id) in filter:
             continue
         isContainer = False
         if len(message.signal_groups) > 0 :
