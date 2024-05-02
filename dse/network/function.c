@@ -41,6 +41,8 @@ int network_function_apply_encode(Network* network)
             /* Trigger update of signals based on changed payload. */
             nm_p->update_signals = true;
 			nm_p->unpack_func(nm_p->buffer, nm_p->payload, nm_p->payload_len);
+            /* Set the buffer checksum to prevent subsequent Tx. */
+            nm_p->buffer_checksum = simbus_generate_uid_hash(nm_p->buffer, nm_p->buffer_len);
         }
     }
 

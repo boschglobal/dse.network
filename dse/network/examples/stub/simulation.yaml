@@ -49,6 +49,8 @@ spec:
     - signal: temperature
     - signal: schedule_signal
     - signal: foo_double
+    - signal: foo
+    - signal: alive
 ---
 kind: SignalGroup
 metadata:
