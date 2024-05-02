@@ -43,9 +43,9 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
             isContainer = True
         messageName = camel_to_snake_case(message.name)
         frames[messageName] = {
-            'frame_id': hex(message.frame_id),
-            'frame_length': str(message.length),
-            'cycle_time_ms': str(message.cycle_time) if message.cycle_time else None,
+            'frame_id': int(message.frame_id),
+            'frame_length': int(message.length),
+            'cycle_time_ms': int(message.cycle_time) if message.cycle_time else None,
             'is_can_fd': message.is_fd,
             'is_extended_frame': message.is_extended_frame,
             'is_container': isContainer
@@ -56,10 +56,10 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
             for mux_id, signals in message.signal_tree[0]['Header_ID'].items():
                 frames[messageName + '_' + hex(mux_id)] = {
                     'container': messageName,
-                    'container_mux_id': hex(mux_id),
-                    'frame_id': hex(message.frame_id),
-                    'frame_length': str(message.length),
-                    'cycle_time_ms': str(message.cycle_time) if message.cycle_time else None,
+                    'container_mux_id': int(mux_id),
+                    'frame_id': int(message.frame_id),
+                    'frame_length': int(message.length),
+                    'cycle_time_ms': int(message.cycle_time) if message.cycle_time else None,
                     'is_can_fd': message.is_fd,
                     'is_extended_frame': message.is_extended_frame,
                     'signals' : [camel_to_snake_case(s) for s in signals]

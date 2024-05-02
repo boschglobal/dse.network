@@ -103,15 +103,15 @@ func (c *GenNetworkCommand) Run() error {
 		if frameInfo != nil {
 			annotations["frame_id"] = frameInfo.FrameId
 			annotations["frame_length"] = frameInfo.FrameLength
-			annotations["frame_type"] = strconv.Itoa(getFrameType(frameInfo))
-			if frameInfo.CycleTime != "" {
+			annotations["frame_type"] = getFrameType(frameInfo)
+			if frameInfo.CycleTime != 0 {
 				annotations["cycle_time_ms"] = frameInfo.CycleTime
 			}
 		}
 		annotations["struct_name"] = structName
 		// Signals (field/member names of the struct).
 		signals := []kind.NetworkSignal{}
-		offset := 0
+		var offset int = 0
 		for _, s := range signalList {
 			name := getSignalName(s.Name, c.signalStyle)
 			signal := kind.NetworkSignal{Signal: name}
@@ -131,14 +131,14 @@ func (c *GenNetworkCommand) Run() error {
 				}
 				if strings.ToLower(name) == "header_id" || strings.ToLower(name) == "header_dlc" {
 					annotations["struct_member_name"] = s.Name
-					annotations["struct_member_offset"] = strconv.Itoa(offset)
+					annotations["struct_member_offset"] = offset
 					annotations["struct_member_primitive_type"] = s.TypeName
 					signal.Annotations = &annotations
 					signals = append(signals, signal)
 				}
 			} else { //normal frames
 				annotations["struct_member_name"] = s.Name
-				annotations["struct_member_offset"] = strconv.Itoa(offset)
+				annotations["struct_member_offset"] = offset
 				annotations["struct_member_primitive_type"] = s.TypeName
 				signal.Annotations = &annotations
 				signals = append(signals, signal)
@@ -170,13 +170,13 @@ func (c *GenNetworkCommand) Run() error {
 }
 
 type FrameInfo struct {
-	FrameId        string   `yaml:"frame_id"`
-	FrameLength    string   `yaml:"frame_length"`
-	CycleTime      string   `yaml:"cycle_time_ms"`
+	FrameId        int      `yaml:"frame_id"`
+	FrameLength    int      `yaml:"frame_length"`
+	CycleTime      int      `yaml:"cycle_time_ms"`
 	CanFD          bool     `yaml:"is_can_fd"`
 	ExtendedFrame  bool     `yaml:"is_extended_frame"`
 	Container      string   `yaml:"container"`
-	ContainerMuxId string   `yaml:"container_mux_id"`
+	ContainerMuxId int      `yaml:"container_mux_id"`
 	IsContainer    bool     `yaml:"is_container"`
 	Signals        []string `yaml:"signals"`
 }
@@ -262,8 +262,8 @@ func processContainer(net *kind.Network, message kind.NetworkMessage, fmd *Frame
 			muxAnnotations := kind.Annotations{}
 			muxAnnotations["frame_id"] = frameInfo.FrameId
 			muxAnnotations["frame_length"] = frameInfo.FrameLength
-			muxAnnotations["frame_type"] = strconv.Itoa(getFrameType(&frameInfo))
-			if frameInfo.CycleTime != "" {
+			muxAnnotations["frame_type"] = getFrameType(&frameInfo)
+			if frameInfo.CycleTime != 0 {
 				muxAnnotations["cycle_time_ms"] = frameInfo.CycleTime
 			}
 			muxAnnotations["container"] = frameInfo.Container
@@ -271,7 +271,7 @@ func processContainer(net *kind.Network, message kind.NetworkMessage, fmd *Frame
 			muxAnnotations["struct_name"] = annotations["struct_name"]
 			muxSignalsList := frameInfo.Signals
 			signals := []kind.NetworkSignal{}
-			offset := 0
+			var offset int = 0
 			for _, s := range signalList {
 				name := getSignalName(s.Name, signalStyle)
 				signal := kind.NetworkSignal{Signal: name}
@@ -286,7 +286,7 @@ func processContainer(net *kind.Network, message kind.NetworkMessage, fmd *Frame
 				if strings.ToLower(name) == "header_id" || strings.ToLower(name) == "header_dlc" || slices.Contains(muxSignalsList, name) {
 					annotations := kind.Annotations{}
 					annotations["struct_member_name"] = s.Name
-					annotations["struct_member_offset"] = strconv.Itoa(offset)
+					annotations["struct_member_offset"] = offset
 					annotations["struct_member_primitive_type"] = s.TypeName
 					if strings.ToLower(name) == "header_id" {
 						annotations["internal"] = "true"
@@ -307,7 +307,7 @@ func processContainer(net *kind.Network, message kind.NetworkMessage, fmd *Frame
 			if offset%8 != 0 {
 				offset = ((offset / 8) * 8) + 8
 			}
-			muxAnnotations["struct_size"] = strconv.Itoa(offset)
+			muxAnnotations["struct_size"] = offset
 			containedMessage.Annotations = &muxAnnotations
 			net.Spec.Messages = append(net.Spec.Messages, containedMessage)
 		}

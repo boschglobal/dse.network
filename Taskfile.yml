@@ -139,12 +139,15 @@ tasks:
       DBCNAME:
         sh: basename {{.DBCFILE}} .dbc
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
-      FILTER: '{{.FILTER | default ""}}'
-      CYCLE_TIME: '{{.CYCLE_TIME | default ""}}'
+      FILTER: '{{if .FILTER}}--filter {{.FILTER}}{{else}}{{end}}'
+      CYCLE_TIME: '{{if .CYCLE_TIME}}--cycle_time {{.CYCLE_TIME}}{{else}}{{end}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
       TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-code {{.DBCFILE}} {{.OUTDIR}} --filter {{.FILTER}} --cycle_time {{.CYCLE_TIME}}
+      - docker run --rm -v $(pwd):/sim {{.IMAGE}}:{{.TAG}} gen-code
+          {{.DBCFILE}} {{.OUTDIR}}
+          {{.FILTER}}
+          {{.CYCLE_TIME}}
     requires:
       vars: [DBCFILE, OUTDIR]
     sources:

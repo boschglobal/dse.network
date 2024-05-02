@@ -79,6 +79,7 @@ tools:
 		mkdir -p extra/tools/$$d/build/stage ;\
 		cp -r licenses -t extra/tools/$$d/build/stage ;\
 		docker build -f extra/tools/$$d/build/package/Dockerfile \
+				--build-arg="CCACHE_SECONDARY_STORAGE=$(CCACHE_SECONDARY_STORAGE)" \
 				--tag $$d:test extra/tools/$$d ;\
 	done;
 

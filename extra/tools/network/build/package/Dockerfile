@@ -7,24 +7,40 @@
 # =====================
 FROM python:3.8.12-slim-bullseye as nuitka
 
+ARG CCACHE_VERSION=4.6.1
+ARG CCACHE_SECONDARY_STORAGE
+
 ENV PATH="/opt/venv/bin:$PATH"
-ADD third_party/cantools /src/third_party/cantools
-ADD build/package/gencode.py /src/build/package/gencode.py
-ADD build/package/convert.py /src/build/package/convert.py
-ADD build/package/mimetype.py /src/build/package/mimetype.py
 
 RUN set -eux; \
     apt-get -y update; \
 	apt-get -y upgrade; \
     apt-get -y install --no-install-recommends \
         build-essential \
+        cmake \
+        curl \
         gcc \
         git \
+        make \
         patchelf \
     ; \
     apt-get clean; \
-    rm -rf /var/lib/apt/lists/*; \
-    \
+    rm -rf /var/lib/apt/lists/*;
+
+RUN curl -fSL https://github.com/ccache/ccache/archive/refs/tags/v${CCACHE_VERSION}.tar.gz -o ccache-${CCACHE_VERSION}.tar.gz \
+    && tar xvzf ccache-${CCACHE_VERSION}.tar.gz \
+    && cd ccache-${CCACHE_VERSION} \
+    && mkdir build; cd build \
+    && cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DHIREDIS_FROM_INTERNET=ON \
+        -DZSTD_FROM_INTERNET=ON \
+        .. \
+    && make; make install; which ccache;
+
+ADD third_party/cantools /src/third_party/cantools
+RUN set -eux; \
+    ccache -c; \
     python -m venv /opt/venv; \
     pip install --upgrade pip; pip install \
         build \
@@ -35,20 +51,25 @@ RUN set -eux; \
         nala \
         nuitka \
         pyyaml \
-    ; \
-    pip list;
-
-RUN set -eux; \
+    && \
     mkdir -p /tmp/cantools; \
     tar -xzf /src/third_party/cantools/cantools.tar.gz -C /tmp/cantools --strip-components=1; \
     ls -R /tmp/cantools \
     && \
     (cd /tmp/cantools; python -m build --wheel --outdir dist/ .); \
     pip install /tmp/cantools cantools; \
+    pip list
+
+ADD build/package/gencode.py /src/build/package/gencode.py
+ADD build/package/convert.py /src/build/package/convert.py
+ADD build/package/mimetype.py /src/build/package/mimetype.py
+RUN set -eux; \
     python -m nuitka --output-dir=/gencode --standalone --onefile /src/build/package/gencode.py; \
     python -m nuitka --output-dir=/convert --standalone --onefile --include-package=canmatrix /src/build/package/convert.py; \
-    python -m nuitka --output-dir=/mimetype --standalone --onefile /src/build/package/mimetype.py; \
-    pip list;
+    python -m nuitka --output-dir=/mimetype --standalone --onefile /src/build/package/mimetype.py \
+    && \
+    pip list; \
+    ccache -p | grep secondary_storage; ccache -s -v
 
 
 

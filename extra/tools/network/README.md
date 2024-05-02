@@ -55,7 +55,7 @@ $ make
 $ make tools
 
 # Run the Task (which uses the Toolset container).
-$ task --force generate DBCFILE=stub/stub.dbc
+$ task --force generate DBCFILE=dse/network/examples/stub/stub.dbc
 ```
 
 
