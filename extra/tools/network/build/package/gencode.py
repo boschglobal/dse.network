@@ -51,7 +51,7 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
             'is_container': isContainer
         }
         if str(message.frame_id) in cycle_time.keys():
-            frames[messageName]['cycle_time_ms'] = cycle_time[str(message.frame_id)]
+            frames[messageName]['cycle_time_ms'] = int(cycle_time[str(message.frame_id)])
         if isContainer :
             for mux_id, signals in message.signal_tree[0]['Header_ID'].items():
                 frames[messageName + '_' + hex(mux_id)] = {

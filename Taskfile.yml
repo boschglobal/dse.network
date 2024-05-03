@@ -140,7 +140,7 @@ tasks:
         sh: basename {{.DBCFILE}} .dbc
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
       FILTER: '{{if .FILTER}}--filter {{.FILTER}}{{else}}{{end}}'
-      CYCLE_TIME: '{{if .CYCLE_TIME}}--cycle_time {{.CYCLE_TIME}}{{else}}{{end}}'
+      CYCLE_TIME: "{{if .CYCLE_TIME}}--cycle_time '{{.CYCLE_TIME}}'{{else}}{{end}}"
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
       TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
