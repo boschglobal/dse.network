@@ -38,9 +38,7 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
     for message in db.messages:
         if filter is not None and str(message.frame_id) in filter:
             continue
-        isContainer = False
-        if len(message.signal_groups) > 0 :
-            isContainer = True
+        isContainer = message.is_multiplexed()
         messageName = camel_to_snake_case(message.name)
         frames[messageName] = {
             'frame_id': int(message.frame_id),
@@ -52,7 +50,7 @@ def scan_messages(dbc_file, out_path, filter, cycle_time):
         }
         if str(message.frame_id) in cycle_time.keys():
             frames[messageName]['cycle_time_ms'] = int(cycle_time[str(message.frame_id)])
-        if isContainer :
+        if isContainer:
             for mux_id, signals in message.signal_tree[0]['Header_ID'].items():
                 frames[messageName + '_' + hex(mux_id)] = {
                     'container': messageName,

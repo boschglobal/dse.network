@@ -108,6 +108,9 @@ func (c *GenNetworkCommand) Run() error {
 				annotations["cycle_time_ms"] = frameInfo.CycleTime
 			}
 		}
+		if frameInfo == nil {
+			continue
+		}
 		annotations["struct_name"] = structName
 		// Signals (field/member names of the struct).
 		signals := []kind.NetworkSignal{}
