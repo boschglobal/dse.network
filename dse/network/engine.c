@@ -111,11 +111,10 @@ int network_get_signal_names(
 }
 
 
-int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
+int network_marshal_signals_to_messages(Network* n, MarshalItem* marshal_list)
 {
-    if (n == NULL || mi == NULL) return 1;
-
-    while (mi->signal) {
+    if (n == NULL || marshal_list == NULL) return 1;
+    for (MarshalItem* mi = marshal_list; mi && mi->signal; mi++) {
         double _signal_value = n->signal_vector[mi->signal_vector_index];
         if (mi->signal->internal && mi->message->container) {
             /* Internal signals on container messages take a constant value. */
@@ -135,8 +134,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                     sizeof(uint8_t)],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
             uint16_t _value = 0;
             _value = mi->signal->encode_func_int16(_signal_value);
             if (mi->signal->range_func_int16(_value)) {
@@ -149,9 +147,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                      sizeof(uint16_t)],
                     mi->signal->name);
             }
-        }
-
-        if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
             uint32_t _value = 0;
             _value = mi->signal->encode_func_int32(_signal_value);
             if (mi->signal->range_func_int32(_value)) {
@@ -164,9 +160,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                      sizeof(uint32_t)],
                     mi->signal->name);
             }
-        }
-
-        if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
             uint64_t _value = 0;
             _value = mi->signal->encode_func_int64(_signal_value);
             if (mi->signal->range_func_int64(_value)) {
@@ -179,9 +173,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                      sizeof(uint64_t)],
                     mi->signal->name);
             }
-        }
-
-        if (strcmp(mi->signal->member_type, "int8_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int8_t") == 0) {
             int8_t _value = 0;
             _value = mi->signal->encode_func_int8(_signal_value);
             if (mi->signal->range_func_int8(_value)) {
@@ -193,9 +185,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                    sizeof(int8_t)],
                     mi->signal->name);
             }
-        }
-
-        if (strcmp(mi->signal->member_type, "int16_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int16_t") == 0) {
             int16_t _value = 0;
             _value = mi->signal->encode_func_int16(_signal_value);
             if (mi->signal->range_func_int16(_value)) {
@@ -207,9 +197,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                     sizeof(int16_t)],
                     mi->signal->name);
             }
-        }
-
-        if (strcmp(mi->signal->member_type, "int32_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int32_t") == 0) {
             int32_t _value = 0;
             _value = mi->signal->encode_func_int32(_signal_value);
             if (mi->signal->range_func_int32(_value)) {
@@ -221,8 +209,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                     sizeof(int32_t)],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "int64_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int64_t") == 0) {
             int16_t _value = 0;
             _value = mi->signal->encode_func_int64(_signal_value);
             if (mi->signal->range_func_int64(_value)) {
@@ -234,8 +221,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                     sizeof(int64_t)],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "float") == 0) {
+        } else if (strcmp(mi->signal->member_type, "float") == 0) {
             float _value = 0;
             _value = mi->signal->encode_func_float(_signal_value);
             if (mi->signal->range_func_float(_value)) {
@@ -248,8 +234,7 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                   sizeof(float)],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "double") == 0) {
+        } else if (strcmp(mi->signal->member_type, "double") == 0) {
             double _value = 0;
             _value = mi->signal->encode_func_double(_signal_value);
             if (mi->signal->range_func_double(_value)) {
@@ -261,28 +246,27 @@ int network_marshal_signals_to_messages(Network* n, MarshalItem* mi)
                                                    sizeof(double)],
                     mi->signal->name);
             }
+        } else {
+            log_error("Unknown type: %s (frame_id=%d, message=%s, signal=%s)",
+                mi->signal->member_type, mi->message->frame_id,
+                mi->message->name, mi->signal->name);
         }
-
-
-        /* Next item. */
-        mi++;
     }
     return 0;
 }
 
 
 int network_marshal_messages_to_signals(
-    Network* n, MarshalItem* mi, bool single)
+    Network* n, MarshalItem* marshal_list, bool single)
 {
-    if (n == NULL || mi == NULL) return 1;
-    while (mi->signal) {
-        log_trace(
+    if (n == NULL || marshal_list == NULL) return 1;
+    for (MarshalItem* mi = marshal_list; mi && mi->signal; mi++) {
+        log_debug(
             "MI Signal: frame_id=%d, update_signals=%d, index=%d, type=%s",
             mi->message->frame_id, mi->message->update_signals,
             mi->signal_vector_index, mi->signal->member_type);
         if (mi->message->update_signals == false && single == false) {
-            /* Next item (force if single == true). */
-            mi++;
+            /* Next item (will be forced if single == true). */
             continue;
         }
         if (strcmp(mi->signal->member_type, "uint8_t") == 0) {
@@ -301,8 +285,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint16_t") == 0) {
             if (mi->signal->range_func_int16((
                     (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int16_t)])) {
@@ -318,8 +301,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint32_t") == 0) {
             if (mi->signal->range_func_int32((
                     (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int32_t)])) {
@@ -335,8 +317,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "uint64_t") == 0) {
             if (mi->signal->range_func_int64((
                     (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int64_t)])) {
@@ -352,8 +333,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "int8_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int8_t") == 0) {
             if (mi->signal->range_func_int8(
                     ((int8_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int8_t)])) {
@@ -368,8 +348,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "int16_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int16_t") == 0) {
             if (mi->signal->range_func_int16((
                     (int16_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int16_t)])) {
@@ -385,8 +364,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "int32_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int32_t") == 0) {
             if (mi->signal->range_func_int32((
                     (int32_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int32_t)])) {
@@ -402,8 +380,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "int64_t") == 0) {
+        } else if (strcmp(mi->signal->member_type, "int64_t") == 0) {
             if (mi->signal->range_func_int64((
                     (int64_t*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(int64_t)])) {
@@ -419,8 +396,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "float") == 0) {
+        } else if (strcmp(mi->signal->member_type, "float") == 0) {
             if (mi->signal->range_func_float(
                     ((float*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                   sizeof(float)])) {
@@ -435,8 +411,7 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
-        }
-        if (strcmp(mi->signal->member_type, "double") == 0) {
+        } else if (strcmp(mi->signal->member_type, "double") == 0) {
             if (mi->signal->range_func_double(
                     ((double*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                    sizeof(double)])) {
@@ -451,10 +426,14 @@ int network_marshal_messages_to_signals(
                     _v, n->signal_vector[mi->signal_vector_index],
                     mi->signal->name);
             }
+        } else {
+            log_error("Unknown type: %s (frame_id=%d, message=%s, signal=%s)",
+                mi->signal->member_type, mi->message->frame_id,
+                mi->message->name, mi->signal->name);
         }
-        /* Next item. */
-        if (single) break; /* Only process the single MI. */
-        mi++;
+
+        /* When single is true, process the single MI _ONLY_. */
+        if (single) return 0;
     }
 
     /* Reset the message processing flags. */

@@ -38,7 +38,6 @@ static NetworkMessage* _find_mux_message(
         if (nm->frame_id == frame_id) {
             if (nm->mux_id == mux_id) {
                 return nm;
-                break;
             }
         }
     }
@@ -48,7 +47,13 @@ static NetworkMessage* _find_mux_message(
 static void _process_message(
     Network* n, NetworkMessage* nm, NCodecCanMessage* msg)
 {
-    nm->unpack_func(nm->buffer, msg->buffer, msg->len);
+    int rc = nm->unpack_func(nm->buffer, msg->buffer, msg->len);
+    if (rc) {
+        log_error("Failed message RX, unpack_func() failed with error %d "
+                  "(frame_id=%d)",
+            -rc, nm->frame_id);
+        return;
+    }
     if (nm->mux_signal && nm->mux_signal->mux_mi) {
         /* This is a container message, also process the contained message. */
         MarshalItem* mi = nm->mux_signal->mux_mi;
@@ -59,6 +64,10 @@ static void _process_message(
             _find_mux_message(n, mux_id, msg->frame_id);
         if (mux_message) {
             _process_message(n, mux_message, msg);
+        } else {
+            log_debug("Mux message not found (frame_id=%d, mux_id=%d, "
+                      "msg->frame_id=%d)",
+                nm->frame_id, mux_id, msg->frame_id);
         }
     }
 
@@ -67,12 +76,15 @@ static void _process_message(
         simbus_generate_uid_hash(nm->buffer, nm->buffer_len);
     nm->update_signals = false;
     if (payload_checksum == nm->buffer_checksum) {
-        log_debug("filtered on checksum %d", payload_checksum);
+        log_debug("Filtered message RX, no change detected in checksum %d, "
+                  "(frame_id=%d, checksum %d)",
+            payload_checksum, nm->frame_id, nm->buffer_checksum);
         return;
     }
     nm->buffer_checksum = payload_checksum;
     nm->update_signals = true;
-    log_debug("decode path checksum %d", payload_checksum);
+    log_debug("New message RX, updated checksum %d (frame_id=%d)",
+        payload_checksum, nm->frame_id);
 }
 
 static void _process_can_frame(Network* n, NCodecCanMessage* msg)

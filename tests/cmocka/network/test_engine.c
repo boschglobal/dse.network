@@ -389,6 +389,55 @@ void test_engine_marshal_container_mux_signal(void** state)
 }
 
 
+void test_engine_marshal_to_single_signal(void** state)
+{
+    UNUSED(state);
+
+     /* Get the Mock objects. */
+    NetworkMock* mock = *state;
+    Network*     n = mock->network;
+
+    /* Call load. */
+    network_load(mock->network, mock->model_instance);
+    assert_non_null(n);
+    assert_non_null(n->messages);
+    assert_non_null(n->signal_vector);
+    assert_non_null(n->signal_count);
+    assert_non_null(n->marshal_list);
+
+    /* Locate a mux MI. */
+    int32_t m600_idx = _find_message_idx(n, "mux_message");
+    assert_in_range(m600_idx, 0, 10);
+    NetworkMessage* m600 = &n->messages[m600_idx];
+    assert_non_null(m600);
+    assert_non_null(m600->mux_signal);
+    NetworkSignal* s600 = m600->mux_signal;
+    assert_string_equal(s600->name, "header_id");
+    assert_non_null(s600->mux_mi);
+    MarshalItem* mi600 = s600->mux_mi;
+    assert_ptr_equal(mi600->signal, s600);
+
+    /* Test that single=true does not modify update_signals. */
+    set_update_signals(n->marshal_list, false);
+    network_marshal_messages_to_signals(n, mi600, true);
+    for (MarshalItem* mi = n->marshal_list; mi && mi->signal; mi++) {
+        if (mi->message) {
+            assert_false(mi->message->update_signals);
+        }
+    }
+    set_update_signals(n->marshal_list, true);
+    network_marshal_messages_to_signals(n, mi600, true);
+    for (MarshalItem* mi = n->marshal_list; mi && mi->signal; mi++) {
+        if (mi->message) {
+            assert_true(mi->message->update_signals);
+        }
+    }
+
+
+    network_unload(mock->network);
+}
+
+
 extern int test_network_setup(void** state);
 extern int test_network_teardown(void** state);
 
@@ -414,6 +463,8 @@ int run_engine_tests(void)
             test_engine_marshal_container_message, s, t),
         cmocka_unit_test_setup_teardown(
             test_engine_marshal_container_mux_signal, s, t),
+        cmocka_unit_test_setup_teardown(
+            test_engine_marshal_to_single_signal, s, t),
     };
 
     return cmocka_run_group_tests_name("ENGINE", tests, NULL, NULL);
