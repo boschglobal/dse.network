@@ -27,6 +27,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_CPP: true
           VALIDATE_DOCKERFILE: true
-          VALIDATE_GO: false
+          # VALIDATE_GO: true
           # VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
