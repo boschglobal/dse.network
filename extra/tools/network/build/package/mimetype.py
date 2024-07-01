@@ -8,11 +8,19 @@ import yaml
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Sets mimetype and network signal" )
-    parser.add_argument("--output_directory", help="Output directory path containing network.yaml and signalgroup.yaml")
-    parser.add_argument("--signal", help="name of the network signal")
-    parser.add_argument("--mimetype", help="mimetype containing interface id, bus id and node id")
+    parser = argparse.ArgumentParser(
+        description="Sets mimetype and network signal" )
+    parser.add_argument(
+        "--output_directory",
+        help="Output directory path containing network.yaml and signalgroup.yaml")
+    parser.add_argument(
+        "--signal",
+        help="name of the network signal")
+    parser.add_argument(
+        "--mimetype",
+        help="mimetype containing interface id, bus id and node id")
     return parser.parse_args()
+
 
 def network(out_dir, mimetype):
     with open(out_dir + os.path.sep + 'network.yaml' , 'r') as file:
@@ -28,11 +36,13 @@ def network(out_dir, mimetype):
     with open(out_dir + os.path.sep + 'network.yaml' , 'w') as f:
         yaml.dump(data, f)
 
+
 def signalgroup(out_dir, mimetype, signal):
     with open(out_dir + os.path.sep + 'signalgroup.yaml', 'r') as file:
         yaml_documents = list(yaml.safe_load_all(file))
-    for idx, doc in enumerate(yaml_documents):
-        if 'metadata' in doc and 'annotations' in doc['metadata'] and 'vector_type' in doc['metadata']['annotations']:
+    for _, doc in enumerate(yaml_documents):
+        if 'metadata' in doc and 'annotations' in doc['metadata'] \
+                and 'vector_type' in doc['metadata']['annotations']:
             if 'spec' in doc and 'signals' in doc['spec']:
                 for item in doc['spec']['signals']:
                     if 'annotations' in item and 'mime_type' in item['annotations']:
@@ -41,7 +51,7 @@ def signalgroup(out_dir, mimetype, signal):
                         item['signal'] = signal
     with open(out_dir + os.path.sep + 'signalgroup.yaml', 'w') as f:
         yaml.safe_dump_all(yaml_documents, f)
-            
+
 
 def extract_values(mimetype):
     parts = mimetype.split(';')

@@ -1,6 +1,4 @@
-
-
-
+---
 version: '3'
 
 vars:
@@ -87,9 +85,11 @@ tasks:
       DBC:
         sh: find {{.OUTDIR}} -type f \( -name '*.dbc' -o -name '*.DBC' \)
     cmds:
-      - for: { var: DBC }
+      - for:
+          var: DBC
         task: generate-dbc
-        vars: { DBCFILE: '{{.ITEM}}' }
+        vars:
+          DBCFILE: '{{.ITEM}}'
     requires:
       vars: [ARXML, SIGNAL, MIMETYPE]
     sources:
@@ -114,15 +114,27 @@ tasks:
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
     cmds:
       - task: gen-code
-        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+        vars:
+          DBCFILE: '{{.DBCFILE}}'
+          OUTDIR: '{{.OUTDIR}}'
       - task: build-message-lib
-        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+        vars:
+          DBCFILE: '{{.DBCFILE}}'
+          OUTDIR: '{{.OUTDIR}}'
       - task: gen-network
-        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+        vars:
+          DBCFILE: '{{.DBCFILE}}'
+          OUTDIR: '{{.OUTDIR}}'
       - task: patch-network
-        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}' }
+        vars:
+          DBCFILE: '{{.DBCFILE}}'
+          OUTDIR: '{{.OUTDIR}}'
       - task: gen-signalgroup
-        vars: { DBCFILE: '{{.DBCFILE}}', OUTDIR: '{{.OUTDIR}}', SIGNAL: '{{.SIGNAL}}', MIMETYPE: '"{{.MIMETYPE}}"' }
+        vars:
+          DBCFILE: '{{.DBCFILE}}'
+          OUTDIR: '{{.OUTDIR}}'
+          SIGNAL: '{{.SIGNAL}}'
+          MIMETYPE: '"{{.MIMETYPE}}"'
     requires:
       vars: [DBCFILE, SIGNAL, MIMETYPE]
     sources:

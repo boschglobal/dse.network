@@ -25,8 +25,11 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FILTER_REGEX_EXCLUDE: (doc/content/.*|dse/network/examples/stub/.*|extra/tools/network/vendor/.*)
           VALIDATE_CPP: true
           VALIDATE_DOCKERFILE: true
           # VALIDATE_GO: true
-          # VALIDATE_MARKDOWN: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_PYTHON_PYLINT: true
+          VALIDATE_PYTHON_FLAKE8: true
           VALIDATE_YAML: true

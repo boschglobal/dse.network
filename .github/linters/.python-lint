@@ -1,0 +1,10 @@
+[MASTER]
+
+# Use multiple processes to speed up Pylint.
+jobs=0
+
+disable=
+    C0114, # missing-module-docstring
+    C0116, # missing-function-docstring
+    E0401, # import-error
+    W1514, # unspecified-encoding

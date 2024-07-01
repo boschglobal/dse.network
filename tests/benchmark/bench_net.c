@@ -1,3 +1,6 @@
+// Copyright 2024 Robert Bosch GmbH
+//
+// SPDX-License-Identifier: Apache-2.0
 
 #include <stdio.h>
 #include <stdint.h>
@@ -57,7 +60,7 @@ typedef struct signal_t {
 void* _get_func_handle(void* handle, const char* fmt, int index)
 {
     char b[1000];
-    snprintf(b, 1000, fmt, index);
+    snprintf(b, sizeof(b), fmt, index);
     // printf("  loading function : %s\n", b);
     void* func = dlsym(handle, b);
     if (func == NULL) {
@@ -117,7 +120,6 @@ void run_bench_loop(double* signals, signal_t* st, int count, int steps)
                 (uint8_t)((uint8_t)(st[i].buffer[0] << 1u) & 0x7eu);
             // Decode
             st[i].buffer[0] = (uint8_t)((uint8_t)(st[i].pack[0] & 0x7eu) >> 1u);
-            ;
             if (st[i].buffer[0] <= 200u) {
                 value = (double)st[i].buffer[0] * 0.5;
             } else {

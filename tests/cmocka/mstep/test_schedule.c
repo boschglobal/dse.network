@@ -126,7 +126,7 @@ void test_schedule__cycle_time(void** state)
 
 void test_schedule__signal_change(void** state)
 {
-    SimMock* mock = *state;
+    SimMock*   mock = *state;
     ModelMock* network_model = &mock->model[0];
     assert_non_null(network_model);
 
@@ -134,7 +134,8 @@ void test_schedule__signal_change(void** state)
     {
         for (uint32_t i = 0; i < 10; i++) {
             assert_int_equal(simmock_step(mock, true), 0);
-            assert_int_equal(network_model->sv_network->length[0] > 0, false);  // can_bus has no data.
+            assert_int_equal(network_model->sv_network->length[0] > 0,
+                false);  // can_bus has no data.
         }
         /* Set a signal value. */
         assert_true(MSG_SIG_IDX < mock->sv_signal->count);
@@ -144,7 +145,8 @@ void test_schedule__signal_change(void** state)
     {
         for (uint32_t i = 0; i < 10; i++) {
             assert_int_equal(simmock_step(mock, true), 0);
-            assert_int_equal(network_model->sv_network->length[0] > 0, false);  // can_bus has no data.
+            assert_int_equal(network_model->sv_network->length[0] > 0,
+                false);  // can_bus has no data.
         }
     }
     /* 10ms */
@@ -156,19 +158,24 @@ void test_schedule__signal_change(void** state)
             { .index = MSG_SIG_IDX, .value = 1.0 },
         };
         FrameCheck f_checks[] = {
-            { .frame_id = MSG_FRAME_ID, .offset = MSG_FRAME_SIG_OFFSET, .value = 0x01 },
+            { .frame_id = MSG_FRAME_ID,
+                .offset = MSG_FRAME_SIG_OFFSET,
+                .value = 0x01 },
         };
         simmock_print_scalar_signals(mock, LOG_DEBUG);
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
-        simmock_signal_check(mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
-        simmock_frame_check(mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
+        simmock_signal_check(
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+        simmock_frame_check(
+            mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
     /* 10-19.5ms */
     {
         for (uint32_t i = 0; i < 19; i++) {
             assert_int_equal(simmock_step(mock, true), 0);
-            assert_int_equal(network_model->sv_network->length[0] > 0, false);  // can_bus has no data.
+            assert_int_equal(network_model->sv_network->length[0] > 0,
+                false);  // can_bus has no data.
         }
     }
     /* 20ms */
@@ -180,13 +187,17 @@ void test_schedule__signal_change(void** state)
             { .index = MSG_SIG_IDX, .value = 1.0 },
         };
         FrameCheck f_checks[] = {
-            { .frame_id = MSG_FRAME_ID, .offset = MSG_FRAME_SIG_OFFSET, .value = 0x01 },
+            { .frame_id = MSG_FRAME_ID,
+                .offset = MSG_FRAME_SIG_OFFSET,
+                .value = 0x01 },
         };
         simmock_print_scalar_signals(mock, LOG_DEBUG);
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
-        simmock_signal_check(mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
-        simmock_frame_check(mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
+        simmock_signal_check(
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+        simmock_frame_check(
+            mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
 }
 

@@ -27,7 +27,7 @@ $ cd dse.network
 $ make
 $ cd dse/network/build/_out/examples/arxml
 $ curl https://raw.githubusercontent.com/nikidimitrow/Learning-AUTOSAR-fundamental/master/BasicsOfAUTOSAR/MyECU.ecuc.arxml --output stub.arxml
-$ task --force generate ARXML=stub.arxml 
+$ task --force generate ARXML=stub.arxml
 $ task set-mimetype \
     OUTDIR=stub/stub.dbc \
     SIGNAL=can \
@@ -35,4 +35,4 @@ $ task set-mimetype \
 $ simer . -endtime 0.050
 ```
 
-Documentation for the `simer` tool is available here : https://boschglobal.github.io/dse.doc/docs/user/simer
+Documentation for the `simer` tool is available here : <https://boschglobal.github.io/dse.doc/docs/user/simer>

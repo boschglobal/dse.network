@@ -37,4 +37,4 @@ $ task generate \
 $ simer . -endtime 0.050
 ```
 
-Documentation for the `simer` tool is available here : https://boschglobal.github.io/dse.doc/docs/user/simer
+Documentation for the `simer` tool is available here : <https://boschglobal.github.io/dse.doc/docs/user/simer>

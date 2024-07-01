@@ -9,12 +9,12 @@ GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:main
 
 ###############
 ## DSE C Library
-export DSE_CLIB_VERSION ?= 1.0.12
+export DSE_CLIB_VERSION ?= 1.0.16
 
 
 ###############
 ## DSE Model C Library
-export DSE_MODELC_VERSION ?= 2.0.13
+export DSE_MODELC_VERSION ?= 2.0.21
 
 
 ###############
@@ -154,9 +154,12 @@ super-linter:
 		--env RUN_LOCAL=true \
 		--env DEFAULT_BRANCH=main \
 		--env IGNORE_GITIGNORED_FILES=true \
-		--env FILTER_REGEX_EXCLUDE="(doc/content/apis/network/examples/.*|doc/content/docs/examples/network/.*)" \
+		--env FILTER_REGEX_EXCLUDE="(doc/content/.*|dse/network/examples/stub/.*|extra/tools/network/vendor/.*)" \
 		--env VALIDATE_CPP=true \
-		--env VALIDATE_YAML=true \
+		--env VALIDATE_DOCKERFILE=true \
+		--env VALIDATE_MARKDOWN=true \
 		--env VALIDATE_PYTHON_PYLINT=true \
 		--env VALIDATE_PYTHON_FLAKE8=true \
-		github/super-linter:slim-v5
+		--env VALIDATE_YAML=true \
+		ghcr.io/super-linter/super-linter:slim-v6
+#		--env VALIDATE_GO=true \

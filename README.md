@@ -22,7 +22,7 @@ The resultant Functional Simulation (FSIL) may be used to validate complex funct
 The following diagram shows how Network Functions and a Virtual ECU may be connected using the Network Model to form a typical FSIL simulation.
 
 
-![](doc/static/network-introduction.png)
+![network-introduction](doc/static/network-introduction.png)
 
 
 The Network Model is implemented with the [Model C Library](https://github.com/boschglobal/dse.modelc) and uses the
@@ -32,7 +32,7 @@ The [Network Codec](https://github.com/boschglobal/dse.standards/tree/main/dse/n
 
 ### Project Structure
 
-```
+```text
 L- dse/network  Network Model source code.
 L- extra        Build infrastructure.
   L- tools      Containerised tools.
@@ -78,7 +78,7 @@ $ simer() { ( cd "$1" && shift && docker run -it --rm -v $(pwd):/sim $SIMER_IMAG
 $ simer . -endtime 0.04
 ```
 
-Documentation for the `simer` tool is available here : https://boschglobal.github.io/dse.doc/docs/user/simer
+Documentation for the `simer` tool is available here : <https://boschglobal.github.io/dse.doc/docs/user/simer>
 
 
 ## Build

@@ -1,4 +1,4 @@
-
+---
 version: '3'
 
 vars:
@@ -59,7 +59,8 @@ tasks:
       SIGNALCOUNT: '{{.SIGNALCOUNT | default 1000}}'
     cmds:
       - task: benchmark-gen
-        vars: { SIGNALCOUNT: '{{.SIGNALCOUNT}}' }
+        vars:
+          SIGNALCOUNT: '{{.SIGNALCOUNT}}'
       - task: benchmark-build
       - ls -R build/
       - build/bench_net {{.SIGNALCOUNT}}

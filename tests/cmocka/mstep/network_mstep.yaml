@@ -115,17 +115,17 @@ spec:
         struct_name: stub_mux_message_t
         struct_size: 16
       signals:
-      - signal: header_id
-        annotations:
-          mux_signal: true
-          struct_member_name: header_id
-          struct_member_offset: 0
-          struct_member_primitive_type: uint32_t
-      - signal: header_dlc
-        annotations:
-          struct_member_name: header_dlc
-          struct_member_offset: 4
-          struct_member_primitive_type: uint8_t
+        - signal: header_id
+          annotations:
+            mux_signal: true
+            struct_member_name: header_id
+            struct_member_offset: 0
+            struct_member_primitive_type: uint32_t
+        - signal: header_dlc
+          annotations:
+            struct_member_name: header_dlc
+            struct_member_offset: 4
+            struct_member_primitive_type: uint8_t
 
     - message: mux_message_601
       annotations:
@@ -137,22 +137,22 @@ spec:
         struct_name: stub_mux_message_t
         struct_size: 16
       signals:
-      - signal: header_id
-        annotations:
-          internal: true
-          value: 601
-          struct_member_name: header_id
-          struct_member_offset: 0
-          struct_member_primitive_type: uint32_t
-      - signal: header_dlc
-        annotations:
-          internal: true
-          value: 42
-          struct_member_name: header_dlc
-          struct_member_offset: 4
-          struct_member_primitive_type: uint8_t
-      - signal: foo_double
-        annotations:
-          struct_member_name: foo_double
-          struct_member_offset: 8
-          struct_member_primitive_type: double
+        - signal: header_id
+          annotations:
+            internal: true
+            value: 601
+            struct_member_name: header_id
+            struct_member_offset: 0
+            struct_member_primitive_type: uint32_t
+        - signal: header_dlc
+          annotations:
+            internal: true
+            value: 42
+            struct_member_name: header_dlc
+            struct_member_offset: 4
+            struct_member_primitive_type: uint8_t
+        - signal: foo_double
+          annotations:
+            struct_member_name: foo_double
+            struct_member_offset: 8
+            struct_member_primitive_type: double
