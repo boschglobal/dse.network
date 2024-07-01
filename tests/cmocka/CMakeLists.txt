@@ -187,6 +187,7 @@ target_include_directories(test_mstep
         ${DSE_NETWORK_INCLUDE_DIR}
         ${DSE_CLIB_INCLUDE_DIR}
         ${DSE_MODELC_LIB_INCLUDE_DIR}
+        ${DSE_MODELC_INCLUDE_DIR}
         ${YAML_SOURCE_DIR}/include
         ./
 )
