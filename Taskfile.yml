@@ -25,7 +25,9 @@ tasks:
       FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
-      PACKAGE_ARCH: '{{.PACKAGE_ARCH | default ""}}'
+      PLATFORM_OS: '{{.PLATFORM_OS | default "linux"}}'
+      PLATFORM_ARCH: '{{.PLATFORM_ARCH | default "x64"}}'
+      PACKAGE_ARCH: '{{.PACKAGE_ARCH | default "{{.PLATFORM_OS}}-{{.PLATFORM_ARCH}}"}}'
       FILTER: '{{.FILTER | default ""}}'
       CYCLE_TIME: '{{.CYCLE_TIME | default ""}}'
     cmds:
@@ -184,12 +186,14 @@ tasks:
       MESSAGE_LIB_FILE: '{{.OUTDIR}}/{{.MESSAGE_LIB}}'
       IMAGE: '{{.IMAGE | default .GCC_IMAGE}}'
       TAG: '{{.TAG | default .GCC_TAG}}'
-      PACKAGE_ARCH: '{{if eq .PACKAGE_ARCH "linux-x86"}}-mx32{{else}}{{end}}'
+      ARCH_FLAGS: '{{if eq .PLATFORM_ARCH "x86"}}-mx32{{else}}{{end}}'
+      GCC_TOOLCHAIN_PREFIX: '{{if eq .PLATFORM_OS "windows"}}x86_64-w64-mingw32-{{else}}{{end}}'
     cmds:
       - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
-          gcc {{.PACKAGE_ARCH}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
+          {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
       - docker run --rm -v $(pwd):/sim -w /sim {{.IMAGE}}:{{.TAG}}
-          gcc {{.PACKAGE_ARCH}} -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
+          {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
+          gcc {{.ARCH_FLAGS}} -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
     requires:
       vars: [DBCFILE, OUTDIR]
     sources:
