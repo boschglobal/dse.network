@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 set(VERSION "$ENV{PACKAGE_VERSION}")
 
 project(Network
@@ -58,6 +59,7 @@ FetchContent_Declare(dse_modelc
 FetchContent_MakeAvailable(dse_modelc)
 set(DSE_MODELC_SOURCE_DIR ${dse_modelc_SOURCE_DIR}/dse/modelc)
 
+
 # External Project - DSE ModelC LIB
 # ---------------------------------
 FetchContent_Declare(dse_modelc_lib
@@ -70,10 +72,26 @@ FetchContent_MakeAvailable(dse_modelc_lib)
 set(DSE_MODELC_INCLUDE_DIR "${dse_modelc_lib_SOURCE_DIR}/include")
 
 
-# Sub Projects
-# ============
-
-add_subdirectory(examples)
+# External Project - dlfcn-win32
+# ------------------------------
+if(WIN32)
+set(DLFCNWIN32_SOURCE_DIR "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32/src")
+set(DLFCNWIN32_BINARY_DIR "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32-build/lib")
+find_library(DLFCNWIN32_LIB
+    NAMES
+        libdl.a
+    PATHS
+        ${DLFCNWIN32_BINARY_DIR}
+    REQUIRED
+    NO_DEFAULT_PATH
+)
+add_library(dl STATIC IMPORTED GLOBAL)
+set_target_properties(dl
+    PROPERTIES
+        IMPORTED_LOCATION "${DLFCNWIN32_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${DLFCNWIN32_SOURCE_DIR}"
+)
+endif()
 
 
 
@@ -98,6 +116,16 @@ target_include_directories(network
         ${DSE_MODELC_INCLUDE_DIR}
         ../..
 )
+target_link_directories(network
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${dse_modelc_lib_SOURCE_DIR}/bin>
+)
+target_link_libraries(network
+    PRIVATE
+        $<$<BOOL:${WIN32}>:modelc>
+        $<$<BOOL:${WIN32}>:dl>
+)
+set(network_link_lib network)
 install(TARGETS network)
 install(
     FILES
@@ -115,6 +143,13 @@ install(
     DESTINATION
         licenses
 )
+
+
+
+# Sub Projects
+# ============
+
+add_subdirectory(examples)
 
 
 

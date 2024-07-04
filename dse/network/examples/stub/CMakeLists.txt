@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
+project(Stub)
 set(MODEL_PATH "examples/stub")
 
 
@@ -37,9 +38,14 @@ target_include_directories(function
         ${DSE_MODELC_INCLUDE_DIR}
         ../../../..
 )
+target_link_libraries(function
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${network_link_lib}>
+)
 
 # Function Library (with UNIT_TESTING)
 # ----------------
+if(UNIX)
 add_library(function__ut
     SHARED
         functions/function.c
@@ -58,6 +64,7 @@ target_include_directories(function__ut
 target_compile_definitions(function__ut
     PUBLIC CMOCKA_TESTING
 )
+endif()
 
 
 # Install
@@ -66,10 +73,17 @@ install(
     TARGETS
         message
         function
+    LIBRARY DESTINATION
+        ${MODEL_PATH}/lib
+)
+if(UNIX)
+install(
+    TARGETS
         function__ut
     LIBRARY DESTINATION
         ${MODEL_PATH}/lib
 )
+endif()
 install(
     FILES
         network.yaml

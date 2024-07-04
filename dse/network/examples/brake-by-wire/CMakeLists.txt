@@ -20,6 +20,14 @@ target_include_directories(brake
     PRIVATE
         ${DSE_MODELC_INCLUDE_DIR}
 )
+target_link_directories(brake
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${dse_modelc_lib_SOURCE_DIR}/bin>
+)
+target_link_libraries(brake
+    PRIVATE
+        $<$<BOOL:${WIN32}>:modelc>
+)
 install(TARGETS brake
     LIBRARY DESTINATION
         ${MODELS_PATH}/brake/lib
@@ -44,6 +52,14 @@ add_library(driver SHARED
 target_include_directories(driver
     PRIVATE
         ${DSE_MODELC_INCLUDE_DIR}
+)
+target_link_directories(driver
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${dse_modelc_lib_SOURCE_DIR}/bin>
+)
+target_link_libraries(driver
+    PRIVATE
+        $<$<BOOL:${WIN32}>:modelc>
 )
 install(TARGETS driver
     LIBRARY DESTINATION
@@ -70,6 +86,14 @@ target_include_directories(pedal
     PRIVATE
         ${DSE_MODELC_INCLUDE_DIR}
 )
+target_link_directories(pedal
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${dse_modelc_lib_SOURCE_DIR}/bin>
+)
+target_link_libraries(pedal
+    PRIVATE
+        $<$<BOOL:${WIN32}>:modelc>
+)
 install(TARGETS pedal
     LIBRARY DESTINATION
         ${MODELS_PATH}/pedal/lib
@@ -94,6 +118,14 @@ add_library(safety SHARED
 target_include_directories(safety
     PRIVATE
         ${DSE_MODELC_INCLUDE_DIR}
+)
+target_link_directories(safety
+    PRIVATE
+        $<$<BOOL:${WIN32}>:${dse_modelc_lib_SOURCE_DIR}/bin>
+)
+target_link_libraries(safety
+    PRIVATE
+        $<$<BOOL:${WIN32}>:modelc>
 )
 install(TARGETS safety
     LIBRARY DESTINATION

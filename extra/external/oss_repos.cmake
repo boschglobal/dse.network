@@ -12,3 +12,4 @@ set(ExternalProject__CLIB__URL       https://github.com/boschglobal/dse.clib/arc
 set(ExternalProject__MODELC__URL     https://github.com/boschglobal/dse.modelc/archive/refs/tags/v$ENV{DSE_MODELC_VERSION}.zip)
 set(ExternalProject__MODELC_LIB__URL https://github.com/boschglobal/dse.modelc/releases/download/v$ENV{DSE_MODELC_VERSION}/ModelC-$ENV{DSE_MODELC_VERSION}-$ENV{PACKAGE_ARCH}.zip)
 set(ExternalProject__CANTOOLS__URL   https://github.com/cantools/cantools/archive/refs/tags/39.4.5.tar.gz)
+set(ExternalProject__DLFCNWIN32__URL https://github.com/dlfcn-win32/dlfcn-win32/archive/refs/tags/v1.3.0.tar.gz)

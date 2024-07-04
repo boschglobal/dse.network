@@ -172,7 +172,7 @@ typedef struct Network {
     NetworkScheduleItem* schedule_list; /* NULL terminated list. */
     uint32_t             tick;          /* 1 ms clock. */
 
-    /* Annotations */
+    /* Annotations. */
     uint32_t bus_id;
     uint32_t node_id;
     uint32_t interface_id;
@@ -180,22 +180,22 @@ typedef struct Network {
 
 
 /* network.c - Loads all parsing and loader functions from the Network shared
- * lib.*/
+ * lib. */
 DLL_PUBLIC int network_load(Network* n, ModelInstanceSpec* mi);
 DLL_PUBLIC int network_unload(Network* n);
 
-/* loader.c - Loads functions from the Network shared lib.*/
+/* loader.c - Loads functions from the Network shared lib. */
 DLL_PUBLIC void* network_load_message_lib(Network* n, const char* dll_path);
 DLL_PUBLIC int   network_load_message_funcs(Network* n);
 DLL_PUBLIC int   network_load_signal_funcs(Network* n);
 DLL_PUBLIC void* network_load_function_lib(Network* n, const char* dll_path);
 DLL_PUBLIC int   network_load_function_funcs(Network* n);
 
-/* parser.c - Loads functions from the Network shared lib.*/
+/* parser.c - Loads functions from the Network shared lib. */
 DLL_PUBLIC int network_parse(Network* n, ModelInstanceSpec* mi);
 DLL_PUBLIC int network_unload_parser(Network* n);
 
-/* engine.c - Loads functions from the Network shared lib.*/
+/* engine.c - Loads functions from the Network shared lib. */
 DLL_PUBLIC int network_load_marshal_lists(Network* n);
 DLL_PUBLIC int network_get_signal_names(
     MarshalItem* ml, const char*** signal_names, size_t* signal_count);
@@ -206,18 +206,18 @@ DLL_PUBLIC void network_pack_messages(Network* n);
 DLL_PUBLIC void network_unpack_messages(Network* n);
 DLL_PUBLIC int  network_unload_marshal_lists(Network* n);
 
-/* encoder.c - Loads functions from the Network shared lib.*/
+/* encoder.c - Loads functions from the Network shared lib. */
 DLL_PRIVATE uint32_t simbus_generate_uid_hash(const uint8_t* key, size_t len);
 DLL_PUBLIC void      network_encode_to_bus(Network* n, void* nc);
 DLL_PUBLIC void      network_decode_from_bus(Network* n, void* nc);
 
-/* function.c*/
+/* function.c */
 DLL_PUBLIC const char* network_function_annotation(
     NetworkFunction* function, const char* name);
 DLL_PUBLIC int network_function_apply_encode(Network* n);
 DLL_PUBLIC int network_function_apply_decode(Network* n);
 
-/*schedule.c*/
+/* schedule.c */
 DLL_PUBLIC void network_schedule_reset(Network* n);
 DLL_PUBLIC void network_schedule_tick(Network* n);
 
