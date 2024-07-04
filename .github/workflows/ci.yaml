@@ -27,6 +27,7 @@ jobs:
           - linux-amd64
           - linux-x86
           - windows-x86
+          - windows-x64
     container:
       image: ghcr.io/boschglobal/dse-gcc-builder:main
     steps:
@@ -97,6 +98,7 @@ jobs:
           - linux-amd64
           - linux-x86
           - windows-x86
+          - windows-x64
     steps:
       - uses: actions/checkout@v3
         with:
