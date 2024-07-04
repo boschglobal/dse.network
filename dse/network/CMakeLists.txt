@@ -16,6 +16,7 @@ project(Network
 include(GNUInstallDirs)
 include(FetchContent)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/_out)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
@@ -143,7 +144,12 @@ install(
     DESTINATION
         licenses
 )
-
+install(
+    DIRECTORY
+        ${CMAKE_BINARY_DIR}/compile_commands.json
+    DESTINATION
+        doc
+)
 
 
 # Sub Projects
