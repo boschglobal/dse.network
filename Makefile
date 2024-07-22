@@ -3,18 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ###############
-## Docker Images.
-GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:main
-
-
-###############
 ## DSE C Library
 export DSE_CLIB_VERSION ?= 1.0.17
 
 
 ###############
 ## DSE Model C Library
-export DSE_MODELC_VERSION ?= 2.0.29
+export DSE_MODELC_VERSION ?= 2.0.23
+
+
+###############
+## Docker Images.
+GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:main
+TESTSCRIPT_IMAGE ?= ghcr.io/boschglobal/dse-testscript:latest
+SIMER_IMAGE ?= ghcr.io/boschglobal/dse-simer:$(DSE_MODELC_VERSION)
 
 
 ###############
@@ -32,6 +34,15 @@ export MODELC_SANDBOX_DIR ?= $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_deps/
 ###############
 ## Tools (Container Images).
 TOOL_DIRS = network
+
+
+###############
+## Test Parameters.
+export HOST_DOCKER_WORKSPACE ?= $(shell pwd -P)
+export TESTSCRIPT_E2E_DIR ?= tests/testscript/e2e
+TESTSCRIPT_E2E_FILES = $(wildcard $(TESTSCRIPT_E2E_DIR)/*.txtar)
+NETWORK_IMAGE ?= $(NAMESPACE)-$(MODULE)
+NETWORK_TAG ?= test
 
 
 ###############
@@ -95,8 +106,31 @@ ifeq ($(PACKAGE_ARCH), linux-amd64)
 	@${DOCKER_BUILDER_CMD} $(MAKE) do-test_cmocka-run
 endif
 
+.PHONY: test_e2e
+test_e2e: do-test_testscript-e2e
+
 .PHONY: test
-test: test_cmocka
+test: test_cmocka test_e2e
+
+do-test_testscript-e2e:
+# Test debug; add '-v' to Testscript command (e.g. $(TESTSCRIPT_IMAGE) -v \).
+ifeq ($(PACKAGE_ARCH), linux-amd64)
+	@set -eu; for t in $(TESTSCRIPT_E2E_FILES) ;\
+	do \
+		echo "Running E2E Test: $$t" ;\
+		docker run -i --rm \
+			-e ENTRYDIR=$(HOST_DOCKER_WORKSPACE) \
+			-v /var/run/docker.sock:/var/run/docker.sock \
+			-v $(HOST_DOCKER_WORKSPACE):/repo \
+			$(TESTSCRIPT_IMAGE) \
+				-e ENTRYDIR=$(HOST_DOCKER_WORKSPACE) \
+				-e NETWORK_IMAGE=$(NETWORK_IMAGE) \
+				-e NETWORK_TAG=$(NETWORK_TAG) \
+				-e SIMER=$(SIMER_IMAGE) \
+				$$t ;\
+	done;
+endif
+
 
 .PHONY: clean
 clean:

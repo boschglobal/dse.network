@@ -1,0 +1,97 @@
+env NAME=simbus
+env SIM=dse/network/build/_out/examples/brake-by-wire
+
+
+# TEST: Task Toolchain
+rm /repo/$SIM/networks/brake/signalgroup.yaml
+rm /repo/$SIM/networks/vehicle/signalgroup.yaml
+rm /repo/$SIM/networks/brake/brake.yaml
+rm /repo/$SIM/networks/vehicle/vehicle.yaml
+rm /repo/$SIM/networks/brake/network.yaml
+rm /repo/$SIM/networks/vehicle/network.yaml
+
+exec sh -e $WORK/generate.sh
+
+exists /repo/$SIM/networks/brake/signalgroup.yaml
+exists /repo/$SIM/networks/vehicle/signalgroup.yaml
+exists /repo/$SIM/networks/brake/brake.yaml
+exists /repo/$SIM/networks/vehicle/vehicle.yaml
+exists /repo/$SIM/networks/brake/network.yaml
+exists /repo/$SIM/networks/vehicle/network.yaml
+
+stderr 'Running command gen-signalgroup ...'
+stderr 'Creating file: networks/brake/signalgroup.yaml'
+stderr 'Appending file: networks/brake/signalgroup.yaml'
+stderr 'Creating file: networks/vehicle/signalgroup.yaml'
+stderr 'Appending file: networks/vehicle/signalgroup.yaml'
+stderr 'Running command gen-network ...'
+stderr 'Writing file: networks/vehicle/network.yaml'
+stderr 'Writing file: networks/brake/network.yaml'
+
+
+# TEST: Network model
+exec sh -e $WORK/test.sh
+
+stdout 'Load and configure the Simulation Models ...'
+
+stdout 'SignalVector<->Network Mapping:'
+stdout 'check_engine_set->check_engine_set'
+stdout 'brake_pedal_pos->brake_pedal_pos'
+stdout 'brake_pedal_pos_ac->brake_pedal_pos_ac'
+stdout 'check_engine_set->check_engine_set'
+stdout 'check_engine_clear->check_engine_clear'
+
+stdout 'SignalVector<->Network Mapping:'
+stdout 'name         : model'
+stdout 'signal_count : 1'
+stdout 'signal_value :'
+stdout 'uid=1665480416, val=0.000000, final_val=0.000000, name=BrakePedalFault'
+
+stdout 'name         : wire'
+stdout 'signal_count : 1'
+stdout 'signal_value :'
+stdout 'uid=4235787044, val=0.000000, final_val=0.000000, name=BrakePedal'
+
+stdout 'name         : hmi'
+stdout 'signal_count : 3'
+stdout 'signal_value :'
+stdout 'uid=3405123031, val=0.000000, final_val=0.000000, name=BrakePedalForce'
+stdout 'uid=988713337, val=0.000000, final_val=0.000000, name=CheckEngine'
+stdout 'uid=3981709966, val=0.000000, final_val=0.000000, name=BrakePedalPos'
+
+stdout 'name         : network'
+stdout 'signal_count : 1'
+stdout 'signal_value :'
+stdout 'uid=4034148709, val=0.000000, final_val=0.000000, name=can'
+
+stdout 'name         : vehicle'
+stdout 'signal_count : 4'
+stdout 'signal_value :'
+stdout 'uid=1852910773, val=0.000000, final_val=0.000000, name=check_engine_set'
+stdout 'uid=79202222, val=0.000000, final_val=0.000000, name=CheckEngineClear'
+stdout 'uid=2112186720, val=0.000000, final_val=0.000000, name=check_engine_clear'
+stdout 'uid=2919739215, val=0.000000, final_val=0.000000, name=CheckEngineSet'
+
+stdout 'Loading dynamic model: models/driver/lib/driver.so ...'
+stdout 'Loading dynamic model: models/pedal/lib/pedal.so ...'
+stdout 'Loading dynamic model: models/safety/lib/safety.so ...'
+stdout 'Loading dynamic model: models/brake/lib/brake.so ...'
+stdout 'Loading dynamic model: models/network/lib/network.so ...'
+
+
+-- generate.sh --
+cd /repo/$SIM
+task -t /repo/Taskfile.yml -f generate \
+    DBCFILE=networks/brake/brake.dbc \
+    SIGNAL=can \
+    MIMETYPE="application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=1; node_id=1; interface_id=1"
+task -t /repo/Taskfile.yml -f generate \
+    DBCFILE=networks/vehicle/vehicle.dbc \
+    SIGNAL=can \
+    MIMETYPE="application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=1; node_id=2; interface_id=1"
+
+
+-- test.sh --
+SIMER="${SIMER:-ghcr.io/boschglobal/dse-simer:latest}"
+docker run --name simer -i --rm -v $ENTRYDIR/$SIM:/sim \
+    $SIMER -valgrind $NAME -env $NAME:SIMBUS_LOGLEVEL=2
