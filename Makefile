@@ -9,12 +9,12 @@ GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:main
 
 ###############
 ## DSE C Library
-export DSE_CLIB_VERSION ?= 1.0.16
+export DSE_CLIB_VERSION ?= 1.0.17
 
 
 ###############
 ## DSE Model C Library
-export DSE_MODELC_VERSION ?= 2.0.21
+export DSE_MODELC_VERSION ?= 2.0.28
 
 
 ###############
