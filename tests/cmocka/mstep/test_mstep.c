@@ -89,7 +89,7 @@ void test_mstep(void** state)
     assert_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0);
     assert_int_equal(model->sv_network->buffer_size[0], 0);
-    model->sv_network->reset(model->sv_network, 0);
+    signal_reset(model->sv_network, 0);
 
     /* Step the model - set signals and check for can_tx. */
     model->sv_signal->scalar[0] = 2;
@@ -115,7 +115,7 @@ void test_mstep(void** state)
     uint8_t C_buf[0x62];
     memcpy(C_buf, model->sv_network->binary[0], C_len);
     C_buf[53] = 0x42;
-    model->sv_network->reset(model->sv_network, 0);
+    signal_reset(model->sv_network, 0);
 
     /* Step the model - set can_rx and check for signals. */
     model->sv_signal->scalar[0] = 1;
@@ -126,10 +126,10 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 0.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 265.0, 0.0);
-    model->sv_network->reset(model->sv_network, 0);
+    signal_reset(model->sv_network, 0);
 
     /* Step the model - inject previous CAN packet. */
-    model->sv_network->append(model->sv_network, 0, C_buf, C_len);
+    signal_append(model->sv_network, 0, C_buf, C_len);
     rc = modelc_step(model->mi, mock->step_size);
     assert_int_equal(rc, 0);
     assert_double_equal(model->sv_signal->scalar[0], 2.0, 0.0);
@@ -138,7 +138,7 @@ void test_mstep(void** state)
     assert_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0);
     assert_int_equal(model->sv_network->buffer_size[0], 0);
-    model->sv_network->reset(model->sv_network, 0);
+    signal_reset(model->sv_network, 0);
 }
 
 

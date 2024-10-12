@@ -69,7 +69,7 @@ ModelDesc* model_create(ModelDesc* model)
     const char* network_signal = NULL;
     for (uint32_t i = 0; i < m->sv_network->count; i++) {
         const char* name =
-            m->sv_network->annotation(m->sv_network, i, "network");
+            signal_annotation(m->sv_network, i, "network", NULL);
         if (name == NULL) continue;
         if (strcmp(name, m->network.name) == 0) {
             network_signal = m->sv_network->signal[i];
@@ -93,7 +93,7 @@ ModelDesc* model_create(ModelDesc* model)
         "  signal mimetype: %s", m->sv_network->mime_type[m->sv_network_index]);
 
     /* Locate the Network Codec. */
-    m->network_codec = m->sv_network->codec(m->sv_network, m->sv_network_index);
+    m->network_codec = signal_codec(m->sv_network, m->sv_network_index);
     if (m->network_codec == NULL) log_fatal("Unable to locate NCodec object!");
 
     /* Print the parsed network. */
@@ -174,7 +174,7 @@ int model_step(ModelDesc* model, double* model_time, double stop_time)
     network_function_apply_decode(&m->network);
     network_marshal_messages_to_signals(
         &m->network, m->network.marshal_list, false);
-    m->sv_network->release(m->sv_network, m->sv_network_index);
+    signal_release(m->sv_network, m->sv_network_index);
 
 
     /* The network tasks are organised on a 1 ms schedule and need to be
