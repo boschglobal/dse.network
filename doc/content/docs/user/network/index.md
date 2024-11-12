@@ -73,8 +73,6 @@ L- dse/network/build/_out/examples/brake-by-wire    <== simulation path
       L- message.so           Vehicle network library.
 ```
 
-The above example represent the following simulation:
-
 
 ## Network Setup
 
