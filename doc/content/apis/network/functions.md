@@ -1,7 +1,14 @@
 ---
-title: Network Module
-linkTitle: Network
+title: Example Network Function API Reference
+linkTitle: Functions
 ---
+## Example Network Functions
+
+
+Example implementation of Network Functions.
+
+
+
 ## Typedefs
 
 ### InstanceData
@@ -14,8 +21,7 @@ typedef struct InstanceData {
 
 ## Functions
 
-### model_init
-
+### counter_inc_uint8
 
 Increment an 8-bit counter in the message packet.
 
@@ -23,14 +29,16 @@ Increment an 8-bit counter in the message packet.
 the corresponding signal. Subsequent calls to `network_message_recalculate`
 may overwrite the modified counter.
 
-
 #### Parameters
-
-message (NetworkMessage)
-: The message that this function will modify.
 
 data (void**)
 : Pointer reference for instance data.
+
+payload (uint8_t*)
+: The payload that this function will modify.
+
+payload_len (size_t)
+: The length of the payload.
 
 
 #### Returns
@@ -44,14 +52,14 @@ ENOMEM
 EPROTO
 : A required annotation was not located.
 
-
 #### Annotations
 
 position
 : The position of the counter in the message packet.
+ 
 
-### model_step
 
+### crc_generate
 
 Calculate a CRC based on the message packet. The CRC is written into the
 specified position in the message packet.
@@ -61,15 +69,16 @@ The CRC algorithm is a simple summation of all bytes in the message packet.
 > Note: in the encode path (TX), changes to the counter are not reflected in
 the corresponding signal.
 
-
 #### Parameters
 
-message (NetworkMessage)
-: The message Returns that this function will modify.
-
 data (void**)
-: Pointer  reference for instance data.
+: Pointer reference for instance data.
 
+payload (uint8_t*)
+: The payload that this function will modify.
+
+payload_len (size_t)
+: The length of the payload.
 
 #### Returns
 
@@ -82,34 +91,30 @@ ENOMEM
 EPROTO
 : A required annotation was not located.
 
-
 #### Annotations
 
 position
 : The position of the CRC in the message packet.
+ 
 
-### model_exit
 
+### crc_validate
 
 Validate the CRC of a message packet. The CRC is included in the message packet.
 
 > Note: in the decode path (RX), bad messages (function returns EBADMSG) will
 not change corresponding signals.
 
-
-#### Annotations
-
-position
-: The position of the CRC in the message packet.
-
 #### Parameters
-
-message (NetworkMessage)
-: The message that this function will modify.
 
 data (void**)
 : Pointer reference for instance data.
 
+payload (uint8_t*)
+: The payload that this function will modify.
+
+payload_len (size_t)
+: The length of the payload.
 
 #### Returns
 
@@ -124,5 +129,11 @@ ENOMEM
 
 EPROTO
 : A required annotation was not located.
+
+#### Annotations
+
+position
+: The position of the CRC in the message packet.
+ 
 
 

@@ -16,12 +16,22 @@
 #include <dse/modelc/schema.h>
 
 
+/**
+Network Model
+=============
+
+The Network Model runs a Communication Stack which represents the connection
+between Physical Signals and Network Messages.
+
+*/
+
+
 /* Forward declarations. */
 typedef struct NetworkMessage  NetworkMessage;
 typedef struct NetworkFunction NetworkFunction;
 typedef struct MarshalItem     MarshalItem;
 
-/**
+/*
 Message Library
 ---------------
 Definition of interface for Network messages which are loaded from
@@ -54,7 +64,7 @@ typedef int (*PackFunc)(uint8_t*, const void*, size_t);
 typedef int (*UnpackFunc)(void*, const uint8_t*, size_t);
 
 
-/**
+/*
 Function Library
 ----------------
 Definition of interface for Functions (applied to the encode/decode message

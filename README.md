@@ -22,7 +22,7 @@ The resultant Functional Simulation (FSIL) may be used to validate complex funct
 The following diagram shows how Network Functions and a Virtual ECU may be connected using the Network Model to form a typical FSIL simulation.
 
 
-![network-introduction](doc/static/network-introduction.png)
+![network-introduction](doc/static/tutorial.png)
 
 
 The Network Model is implemented with the [Model C Library](https://github.com/boschglobal/dse.modelc) and uses the

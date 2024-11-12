@@ -9,6 +9,14 @@
 #include <dse/network/network.h>
 
 
+/**
+Example Network Functions
+=========================
+
+Example implementation of Network Functions.
+*/
+
+
 typedef struct InstanceData {
     uint8_t position;  // Annotation: position
 } InstanceData;
