@@ -22,7 +22,7 @@ tasks:
       DBCDIR:
         sh: dirname {{.DBCFILE}}
       OUTDIR: '{{default .DBCDIR .OUTDIR}}'
-      FUNCTION_LIB: '{{.FUNCTION_PATCH | default ""}}'
+      FUNCTION_LIB: '{{.FUNCTION_LIB | default ""}}'
       FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
@@ -42,6 +42,7 @@ tasks:
       - '{{.PWD}}/{{.OUTDIR}}/**'
 
   convert-arxml:
+    internal: true
     run: always
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.ARXML}}
@@ -69,6 +70,7 @@ tasks:
       - '{{.PWD}}/{{.OUTDIR}}/**'
 
   find-dbc:
+    internal: true
     run: always
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.ARXML}}
@@ -101,6 +103,7 @@ tasks:
       - '{{.PWD}}/{{.OUTDIR}}/**'
 
   generate-dbc:
+    internal: true
     run: always
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.DBCFILE}}
@@ -146,6 +149,7 @@ tasks:
       - '{{.PWD}}/{{.OUTDIR}}/**'
 
   gen-code:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-code-{{.DBCFILE}}
@@ -173,6 +177,7 @@ tasks:
       - '{{.PWD}}/{{.OUTDIR}}/{{.DBCNAME}}.yaml'
 
   build-message-lib:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:build-message-lib-{{.DBCFILE}}
@@ -205,6 +210,7 @@ tasks:
       - '{{.PWD}}/{{.MESSAGE_LIB_FILE}}'
 
   gen-network:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-network-{{.DBCFILE}}
@@ -243,6 +249,7 @@ tasks:
       - '{{.PWD}}/{{.NETWORK_FILE}}'
 
   patch-network:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:patch-network-{{.DBCFILE}}
@@ -272,6 +279,7 @@ tasks:
       - '{{.PWD}}/{{.NETWORK_FILE}}'
 
   gen-signalgroup:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-signalgroup-{{.DBCFILE}}
@@ -305,6 +313,7 @@ tasks:
       - '{{.PWD}}/{{.SIGGROUP_FILE}}'
 
   set-mimetype:
+    internal: true
     run: when_changed
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-signalgroup-{{.DBCFILE}}
