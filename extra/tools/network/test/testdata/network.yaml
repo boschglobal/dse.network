@@ -1,0 +1,53 @@
+---
+kind: Network
+metadata:
+  annotations:
+    message_lib: examples/stub/lib/message.so
+    function_lib: examples/stub/lib/function__ut.so
+    node_id: 2
+    interface_id: 3
+    bus_id: 4
+  labels: {}
+  name: stub
+spec:
+  signals: []
+  messages:
+    - message: example_message
+      annotations:
+        struct_name: stub_example_message_t
+        struct_size: 4
+        frame_id: 0x1f0u
+        frame_length: 8u
+      signals:
+        - signal: Enable
+          annotations:
+            struct_member_name: enable
+            struct_member_offset: 0
+            struct_member_primitive_type: uint8_t
+    - message: function_example
+      annotations:
+        struct_name: stub_function_example_t
+        struct_size: 4
+        frame_id: 0x1f2u
+        frame_length: 8u
+      signals:
+        - signal: Crc
+          annotations:
+            struct_member_name: crc
+            struct_member_offset: 0
+            struct_member_primitive_type: uint16_t
+        - signal: foo
+          annotations:
+            struct_member_name: foo
+            struct_member_offset: 0
+            struct_member_primitive_type: uint16_t
+        - signal: bar
+          annotations:
+            struct_member_name: bar
+            struct_member_offset: 0
+            struct_member_primitive_type: uint16_t
+        - signal: foobar
+          annotations:
+            struct_member_name: foobar
+            struct_member_offset: 0
+            struct_member_primitive_type: uint16_t

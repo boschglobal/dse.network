@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err := DispatchCommand(os.Args[1]); err != nil {
-		slog.Info("Command error: %v", err)
+		slog.Info("Command error: %v","err", err)
 		os.Exit(2)
 	}
 }

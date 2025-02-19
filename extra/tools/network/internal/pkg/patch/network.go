@@ -138,7 +138,11 @@ func patchSignals(network *kind.Network, patchFile string, removeUnknown bool) e
 	}
 	patch := map[string]string{}
 	for _, record := range records {
-		patch[record[0]] = record[1]
+		if record[1] != "" {
+			patch[record[0]] = record[1]
+		} else {
+			patch[record[0]] = record[0]
+		}
 	}
 
 	// Apply the patch (remove if target=inactive or removeUnknown=true).

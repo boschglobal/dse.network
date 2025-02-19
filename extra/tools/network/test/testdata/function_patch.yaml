@@ -1,0 +1,14 @@
+---
+- message: function_example
+  functions:
+    encode:
+      - function: counter_inc_uint8
+        annotations:
+          position: 1
+      - function: crc_generate
+        annotations:
+          position: 0
+    decode:
+      - function: crc_validate
+        annotations:
+          position: 0
