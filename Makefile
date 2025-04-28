@@ -29,6 +29,7 @@ export PACKAGE_ARCH_LIST ?= $(PACKAGE_ARCH)
 export CMAKE_TOOLCHAIN_FILE ?= $(shell pwd -P)/extra/cmake/$(PACKAGE_ARCH).cmake
 SUBDIRS = $(NAMESPACE)/$(MODULE)
 export MODELC_SANDBOX_DIR ?= $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_deps/dse_modelc-src
+export MAKE_NPROC ?= $(shell nproc)
 
 
 ###############
@@ -64,6 +65,7 @@ ifneq ($(CI), true)
 		--env GDB_CMD="$(GDB_CMD)" \
 		--env PACKAGE_ARCH=$(PACKAGE_ARCH) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		--env MAKE_NPROC=$(MAKE_NPROC) \
 		--volume $$(pwd):/tmp/repo \
 		--volume $(EXTERNAL_BUILD_DIR):$(EXTERNAL_BUILD_DIR) \
 		--volume ~/.ccache:/root/.ccache \
