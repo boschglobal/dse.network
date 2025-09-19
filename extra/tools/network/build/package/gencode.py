@@ -83,7 +83,15 @@ def scan_messages(dbc_file, out_path, frame_filter, cycle_time):
         frames[message_name] = {
             'frame_id': int(message.frame_id),
             'frame_length': int(message.length),
-            'cycle_time_ms': int(message.cycle_time) if message.cycle_time else None,
+            'cycle_time_ms': (
+                int(message.cycle_time)
+                if message.cycle_time
+                else (
+                    int(message.dbc.attributes['GenMsgDelayTime'].value)
+                    if 'GenMsgDelayTime' in message.dbc.attributes and message.dbc.attributes['GenMsgDelayTime'].value is not None
+                    else None
+                )
+            ),
             'is_can_fd': message.is_fd,
             'is_extended_frame': message.is_extended_frame,
             'is_container': is_container
