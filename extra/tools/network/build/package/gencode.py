@@ -88,7 +88,7 @@ def scan_messages(dbc_file, out_path, frame_filter, cycle_time):
                 if message.cycle_time
                 else (
                     int(message.dbc.attributes['GenMsgDelayTime'].value)
-                    if 'GenMsgDelayTime' in message.dbc.attributes 
+                    if 'GenMsgDelayTime' in message.dbc.attributes
                     and message.dbc.attributes['GenMsgDelayTime'].value is not None
                     else None
                 )
