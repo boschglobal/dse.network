@@ -1,6 +1,30 @@
 ---
 version: '3'
 
+metadata:
+  package:
+    download: '{{.REPO}}/releases/download/v{{.TAG}}/Network-{{.TAG}}-{{.PLATFORM_ARCH}}.zip'
+  container:
+    repository:
+  models:
+    dse.network:
+    name: network
+    displayName: dse.network
+    path: ''
+    mcl: false
+    workflows:
+      - generate
+    platforms:
+      - linux-amd64
+      - linux-x86
+      - linux-i386
+      - windows-x64
+      - windows-x86
+    channels:
+      - alias: signal_channel
+      - alias: network_channel
+
+
 vars:
   ENTRYDIR: '{{if .SIM}}{{.ENTRYDIR}}/{{.SIM}}{{else}}{{.PWD}}{{end}}'
   NETWORK_IMAGE: ghcr.io/boschglobal/dse-network
@@ -40,6 +64,61 @@ tasks:
       - '{{.PWD}}/{{.ARXML}}'
     generates:
       - '{{.PWD}}/{{.OUTDIR}}/**'
+    metadata:
+      vars:
+        SIGNAL:
+          required: true
+          hint: Network signal representing the CAN Network.
+          default: can
+        MIMETYPE:
+          required: true
+          hint: Mime Type of the CAN Network.
+          default: "application/x-automotive-bus; interface=stream; type=frame; bus=can; schema=fbs; bus_id=1; node_id=2; interface_id=3"
+        DBCFILE:
+          required: true
+          hint: Path to CAN DBC file.
+        ARXML:
+          required: false
+          hint: Path to arxml file.
+        DBCDIR:
+          required: false
+          hint: Path to where CAN DBC file is present.
+        OUTDIR:
+          required: false
+          hint: Path to the generated files.
+          default: '{{.PATH}}/data'
+        FUNCTION_LIB:
+          required: false
+          hint: Path to function library.
+          default: '{{.PATH}}/lib/function.so'
+        FUNCTION_PATCH:
+          required: false
+          hint: Patch to function patch file.
+        SIGNAL_PATCH:
+          required: false
+          hint: Path to signal patch file.
+        REMOVE_UNKNOWN:
+          required: false
+          hint: Remove unknown items (i.e. not in the patch file).
+        PLATFORM_OS:
+          required: false
+          hint: Target operating system for the platform.
+          default: linux
+        PLATFORM_ARCH:
+          required:
+          hint: Target architecture for the platform.
+          default: x64
+        PACKAGE_ARCH:
+          required: false
+          hint: Package-arch
+          default: linux-x64
+        FILTER:
+          required: false
+          hint: Filters the frames based on frame ID.
+        CYCLE_TIME:
+          required: false
+          hint: Cadence for opaque frame exchange.
+          default: '{"frame_out":10}'
 
   convert-arxml:
     internal: true
