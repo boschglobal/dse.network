@@ -64,7 +64,7 @@ int crc_generate(NetworkFunction* function, uint8_t* payload, size_t payload_len
     /* CRC calculation. */
     uint8_t* buffer = payload;
     uint8_t  crc = 0;
-    for (size_t i = 0; i < payload_len; i++) {
+    for (uint8_t i = 0; i < payload_len; i++) {
         if (i == inst->position) continue;
         crc += buffer[i];
     }

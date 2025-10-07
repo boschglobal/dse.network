@@ -78,7 +78,7 @@ def scan_messages(dbc_file, out_path, frame_filter, cycle_time):
     for message in db.messages:
         if frame_filter is not None and str(message.frame_id) in frame_filter:
             continue
-        is_container = message.is_multiplexed()
+        is_container = message.is_multiplexed() & message.is_container
         message_name = camel_to_snake_case(message.name)
         frames[message_name] = {
             'frame_id': int(message.frame_id),
@@ -88,8 +88,7 @@ def scan_messages(dbc_file, out_path, frame_filter, cycle_time):
                 if message.cycle_time
                 else (
                     int(message.dbc.attributes['GenMsgDelayTime'].value)
-                    if 'GenMsgDelayTime' in message.dbc.attributes
-                    and message.dbc.attributes['GenMsgDelayTime'].value is not None
+                    if 'GenMsgDelayTime' in message.dbc.attributes and message.dbc.attributes['GenMsgDelayTime'].value is not None
                     else None
                 )
             ),
