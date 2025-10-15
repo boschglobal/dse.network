@@ -224,11 +224,11 @@ func getSignalName(name string, style string) string {
 	parts := []string{}
 	switch style {
 	case "PascalCase":
-		for _, part := range strings.Split(name, "_") {
-			part = caser.String(part)
-			parts = append(parts, part)
+		parts := strings.Split(name, "_")
+		name = ""
+		for _, part := range parts {
+			name += strings.Title(strings.ToLower(part))
 		}
-		name = strings.Join(parts, "")
 	case "camelCase":
 		for i, part := range strings.Split(name, "_") {
 			if i != 0 {
