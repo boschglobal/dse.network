@@ -5,7 +5,7 @@
 
 # Python nuitka Builder
 # =====================
-FROM python:3.8.12-slim-bookworm as nuitka
+FROM python:3.11-slim-bookworm AS nuitka
 
 ARG CCACHE_VERSION=4.6.1
 ARG CCACHE_SECONDARY_STORAGE
@@ -75,7 +75,7 @@ RUN set -eux; \
 
 # Network Builder
 # ===============
-FROM golang:bookworm as network
+FROM golang:bookworm AS network
 ADD . /src
 RUN cd /src && make build
 
