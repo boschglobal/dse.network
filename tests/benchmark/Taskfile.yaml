@@ -2,8 +2,8 @@
 version: '3'
 
 vars:
-  GO_BUILDER_IMAGE: golang:bullseye
-  GCC_BUILDER_IMAGE: golang:bullseye
+  GO_BUILDER_IMAGE: golang:bookworm
+  GCC_BUILDER_IMAGE: golang:bookworm
 
 tasks:
 

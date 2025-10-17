@@ -5,7 +5,7 @@
 
 # Python nuitka Builder
 # =====================
-FROM python:3.8.12-slim-bullseye as nuitka
+FROM python:3.8.12-slim-bookworm as nuitka
 
 ARG CCACHE_VERSION=4.6.1
 ARG CCACHE_SECONDARY_STORAGE
@@ -75,7 +75,7 @@ RUN set -eux; \
 
 # Network Builder
 # ===============
-FROM golang:bullseye as network
+FROM golang:bookworm as network
 ADD . /src
 RUN cd /src && make build
 
@@ -83,7 +83,7 @@ RUN cd /src && make build
 
 # Network Container Image
 # =======================
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 LABEL maintainer="timothy.rule@de.bosch.com";
 
 RUN set -eux; \
