@@ -4,12 +4,17 @@ name: CI
 on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
   push:
-    branches: [main, devel]
+    branches: [main]
     tags:
       - 'v*.*.*'
   pull_request:
-    branches: [main, devel]
+    branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+  
 env:
   REGISTRY: ghcr.io
   IMAGE_BASE_NAME: ${{ github.repository_owner }}/dse
@@ -62,10 +67,6 @@ jobs:
           PACKAGE_ARCH: ${{ matrix.package_arch }}
         run: |
           make test_cmocka
-
-      - name: Stats
-        run: |
-          ccache -s -v || true
 
       - name: Package
         env:
