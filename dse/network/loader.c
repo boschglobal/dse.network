@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <setjmp.h>
 #include <dlfcn.h>
 #include <dse/testing.h>
