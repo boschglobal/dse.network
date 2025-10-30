@@ -4,6 +4,7 @@ metadata:
   annotations:
     bus_id: 4
     function_lib: examples/stub/lib/function__ut.so
+    netoff_signal: foo_netoff
     interface_id: 3
     message_lib: examples/stub/lib/message.so
     node_id: 2

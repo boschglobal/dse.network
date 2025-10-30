@@ -64,7 +64,7 @@ void test_mstep(void** state)
 
     assert_non_null(model->sv_signal);
     assert_string_equal(model->sv_signal->name, "signal");
-    assert_int_equal(model->sv_signal->count, 7);
+    assert_int_equal(model->sv_signal->count, 8);
     assert_non_null(model->sv_signal->scalar);
     assert_non_null(model->sv_network);
     assert_string_equal(model->sv_network->name, "network");
@@ -77,6 +77,7 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 0.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 265.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[7], 0.0, 0.0);
     assert_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0);
     assert_int_equal(model->sv_network->buffer_size[0], 0);
@@ -87,6 +88,7 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 0.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 265.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[7], 0.0, 0.0);
     assert_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0);
     assert_int_equal(model->sv_network->buffer_size[0], 0);
@@ -101,6 +103,7 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 2.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 260.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[7], 0.0, 0.0);
     assert_non_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0x62);
     assert_int_equal(model->sv_network->buffer_size[0], 0x62);
@@ -127,6 +130,7 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 0.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 265.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[7], 0.0, 0.0);
     signal_reset(model->sv_network, 0);
 
     /* Step the model - inject previous CAN packet. */
@@ -136,6 +140,22 @@ void test_mstep(void** state)
     assert_double_equal(model->sv_signal->scalar[0], 2.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[1], 1.0, 0.0);
     assert_double_equal(model->sv_signal->scalar[2], 260.0, 0.0);
+    assert_null(model->sv_network->binary[0]);
+    assert_int_equal(model->sv_network->length[0], 0);
+    assert_int_equal(model->sv_network->buffer_size[0], 0);
+    signal_reset(model->sv_network, 0);
+
+    /* Step the model - set net signal off and check for zero can_tx. */
+    model->sv_signal->scalar[0] = 2;
+    model->sv_signal->scalar[1] = 1;
+    model->sv_signal->scalar[2] = 260;
+    model->sv_signal->scalar[7] = 1;
+    rc = modelc_step(model->mi, mock->step_size);
+    assert_int_equal(rc, 0);
+    assert_double_equal(model->sv_signal->scalar[0], 2.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[1], 1.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[2], 260.0, 0.0);
+    assert_double_equal(model->sv_signal->scalar[7], 1.0, 0.0);
     assert_null(model->sv_network->binary[0]);
     assert_int_equal(model->sv_network->length[0], 0);
     assert_int_equal(model->sv_network->buffer_size[0], 0);

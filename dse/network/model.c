@@ -39,6 +39,11 @@ typedef struct {
     SRMap*        __sr_map;
 } NetworkModelDesc;
 
+static inline double* _index(NetworkModelDesc* m, const char* v, const char* s)
+{
+    ModelSignalIndex idx = signal_index((ModelDesc*)m, v, s);
+    return idx.scalar;
+}
 
 ModelDesc* model_create(ModelDesc* model)
 {
@@ -127,6 +132,17 @@ ModelDesc* model_create(ModelDesc* model)
                 nt_sig_name);
             break;
         }
+    }
+    if (m->network.netoff_signal) {
+        m->network.netoff_value =
+            _index(m, "signal_channel", m->network.netoff_signal);
+        if (m->network.netoff_value == NULL)
+            log_error("Network-Off signal : %s found in annotations but not in "
+                      "signalgroup",
+                m->network.netoff_signal);
+        else
+            log_notice(
+                "Network-Off signal found: %s ", m->network.netoff_signal);
     }
 
     /* Set the SignalVector initial value. */

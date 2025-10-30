@@ -291,8 +291,11 @@ static int _network_match_handler(ModelInstanceSpec* mi, SchemaObject* object)
         n->doc, "metadata/annotations/message_lib", &n->message_lib_path);
     dse_yaml_get_string(
         n->doc, "metadata/annotations/function_lib", &n->function_lib_path);
+    dse_yaml_get_string(
+        n->doc, "metadata/annotations/netoff_signal", &n->netoff_signal);
     log_debug("Network Message Lib Path: %s", n->message_lib_path);
     log_debug("Network Function Lib Path: %s", n->function_lib_path);
+    log_debug("Network Off Signal: %s", n->netoff_signal);
     if (n->message_lib_path == NULL) return 1;
 
     /* Node ID */

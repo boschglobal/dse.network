@@ -51,6 +51,7 @@ spec:
     - signal: foo_double
     - signal: foo
     - signal: alive
+    - signal: foo_netoff
 ---
 kind: SignalGroup
 metadata:

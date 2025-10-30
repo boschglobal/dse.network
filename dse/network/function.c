@@ -20,7 +20,12 @@ int network_function_apply_encode(Network* n)
 {
     assert(n);
 
+    bool net_off = false;
+    if (n->netoff_value && *(n->netoff_value) != 0.0) {
+        net_off = true;
+    }
     for (NetworkMessage* nm = n->messages; nm && nm->name; nm++) {
+        if (net_off) nm->needs_tx = false;  // Force to false if network is off.
         if (nm->needs_tx == false) continue;
 
         uint32_t payload_checksum =

@@ -55,6 +55,7 @@ tasks:
       PACKAGE_ARCH: '{{.PACKAGE_ARCH | default "{{.PLATFORM_OS}}-{{.PLATFORM_ARCH}}"}}'
       FILTER: '{{.FILTER | default ""}}'
       CYCLE_TIME: '{{.CYCLE_TIME | default ""}}'
+      NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
       - task: "{{if .ARXML}}convert-arxml{{else}}generate-dbc{{end}}"
     requires:
@@ -119,6 +120,9 @@ tasks:
           required: false
           hint: Cadence for opaque frame exchange.
           default: '{"frame_out":10}'
+        NETOFF_SIGNAL:
+          required: false
+          hint: Signal to stop TX messages.
 
   convert-arxml:
     internal: true
@@ -138,6 +142,7 @@ tasks:
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
       TAG: '{{.TAG | default .NETWORK_TAG}}'
+      NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
       - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} convert-arxml {{.ARXML}} {{.OUTDIR}}
       - task: find-dbc
@@ -166,6 +171,7 @@ tasks:
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
       TAG: '{{.TAG | default .NETWORK_TAG}}'
+      NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
       DBC:
         sh: find {{.OUTDIR}} -type f \( -name '*.dbc' -o -name '*.DBC' \)
     cmds:
@@ -197,6 +203,7 @@ tasks:
       FUNCTION_PATCH: '{{.FUNCTION_PATCH | default ""}}'
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
+      NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
       - task: gen-code
         vars:
@@ -303,6 +310,7 @@ tasks:
       METADATA_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.yaml'
       MESSAGE_LIB: '{{.MESSAGE_LIB | default "message.so"}}'
       FUNCTION_LIB: '{{if .FUNCTION_LIB}}--function_lib {{.FUNCTION_LIB}}{{else}}{{end}}'
+      NETOFF_SIGNAL: '{{if .NETOFF_SIGNAL}}--netoff_signal {{.NETOFF_SIGNAL}}{{else}}{{end}}'
       LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
       ANNOTATIONS: '{{if .ANNOTATIONS}}--annotations {{.ANNOTATIONS}}{{else}}{{end}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
@@ -316,6 +324,7 @@ tasks:
           --message_lib {{.OUTDIR}}/{{.MESSAGE_LIB}}
           --style snake_case
           {{.FUNCTION_LIB}}
+          {{.NETOFF_SIGNAL}}
           {{.LABELS}}
           {{.ANNOTATIONS}}
     requires:

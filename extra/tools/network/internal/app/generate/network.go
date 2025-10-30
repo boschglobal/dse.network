@@ -30,6 +30,7 @@ type GenNetworkCommand struct {
 	metadataFile string
 	messageLib   string
 	functionLib  string
+	netoffSignal string
 	outputFile   string
 	signalStyle  string
 
@@ -48,6 +49,7 @@ func NewGenNetworkCommand(name string) *GenNetworkCommand {
 	c.fs.StringVar(&c.outputFile, "network", "", "path to write the generated network file")
 	c.fs.StringVar(&c.messageLib, "message_lib", "", "path to message library")
 	c.fs.StringVar(&c.functionLib, "function_lib", "", "path to function library")
+	c.fs.StringVar(&c.netoffSignal, "netoff_signal", "", "path to function library")
 	c.fs.StringVar(&c.signalStyle, "style", "PascalCase", "select from: PascalCase, camelCase, snake_case")
 	return c
 }
@@ -86,6 +88,9 @@ func (c *GenNetworkCommand) Run() error {
 	}
 	if c.functionLib != "" {
 		annotations["function_lib"] = c.functionLib
+	}
+	if c.netoffSignal != "" {
+		annotations["netoff_signal"] = c.netoffSignal
 	}
 	net := kind.Network{
 		Kind: "Network",

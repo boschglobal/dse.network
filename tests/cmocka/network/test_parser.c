@@ -107,6 +107,7 @@ void test_network_parse_database(void** state)
         mock->network->message_lib_path, "examples/stub/lib/message.so");
     assert_string_equal(
         mock->network->function_lib_path, "examples/stub/lib/function__ut.so");
+    assert_string_equal(mock->network->netoff_signal, "foo_netoff");
     assert_int_equal(mock->network->node_id, 2);
     assert_int_equal(mock->network->interface_id, 3);
     assert_int_equal(mock->network->bus_id, 4);

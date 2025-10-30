@@ -186,6 +186,10 @@ typedef struct Network {
     uint32_t bus_id;
     uint32_t node_id;
     uint32_t interface_id;
+
+    /* Sleep signal. */
+    const char* netoff_signal;
+    double*     netoff_value;
 } Network;
 
 
