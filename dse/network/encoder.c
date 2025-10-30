@@ -12,6 +12,7 @@
 #include <dse/modelc/schema.h>
 #include <dse/clib/util/yaml.h>
 #include <dse/ncodec/codec.h>
+#include <dse/ncodec/interface/frame.h>
 
 
 #define UNUSED(x)     ((void)x)

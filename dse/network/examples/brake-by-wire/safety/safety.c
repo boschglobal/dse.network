@@ -12,14 +12,14 @@
 typedef struct {
     ModelDesc model;
     /* Signal Interface. */
-    double* pedal_fault;
-    double* pedal_pos_ac;
-    double* check_engine_set;
-    double* check_engine_clear;
+    double*   pedal_fault;
+    double*   pedal_pos_ac;
+    double*   check_engine_set;
+    double*   check_engine_clear;
     /* State. */
-    bool pedal_fault_active;
-    double last_sample;
-    int alive_counter;
+    bool      pedal_fault_active;
+    double    last_sample;
+    int       alive_counter;
 } SafetyModelDesc;
 
 static inline double* _index(SafetyModelDesc* m, const char* v, const char* s)
@@ -50,7 +50,7 @@ ModelDesc* model_create(ModelDesc* model)
 int model_step(ModelDesc* model, double* model_time, double stop_time)
 {
     SafetyModelDesc* m = (SafetyModelDesc*)model;
-    int ac_sample = (int)*m->pedal_pos_ac;
+    int              ac_sample = (int)*m->pedal_pos_ac;
     if (ac_sample == m->alive_counter) {
         /* No change observed. */
         if ((*model_time - m->last_sample) > 0.1000) {

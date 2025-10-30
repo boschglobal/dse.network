@@ -40,79 +40,79 @@ extern "C" {
 #include <stddef.h>
 
 #ifndef EINVAL
-#    define EINVAL 22
+#define EINVAL 22
 #endif
 
 /* Frame ids. */
-#define STUB_EXAMPLE_MESSAGE_FRAME_ID (0x1f0u)
-#define STUB_EXAMPLE_MESSAGE2_FRAME_ID (0x1f1u)
-#define STUB_FUNCTION_EXAMPLE_FRAME_ID (0x1f2u)
-#define STUB_UNSIGNED_TYPES_FRAME_ID (0x1f3u)
-#define STUB_SIGNED_TYPES_FRAME_ID (0x1f4u)
-#define STUB_FLOAT_TYPES_FRAME_ID (0x1f5u)
-#define STUB_SCHEDULED_MESSAGE_FRAME_ID (0x1f6u)
-#define STUB_MUX_MESSAGE_FRAME_ID (0x258u)
+#define STUB_EXAMPLE_MESSAGE_FRAME_ID               (0x1f0u)
+#define STUB_EXAMPLE_MESSAGE2_FRAME_ID              (0x1f1u)
+#define STUB_FUNCTION_EXAMPLE_FRAME_ID              (0x1f2u)
+#define STUB_UNSIGNED_TYPES_FRAME_ID                (0x1f3u)
+#define STUB_SIGNED_TYPES_FRAME_ID                  (0x1f4u)
+#define STUB_FLOAT_TYPES_FRAME_ID                   (0x1f5u)
+#define STUB_SCHEDULED_MESSAGE_FRAME_ID             (0x1f6u)
+#define STUB_MUX_MESSAGE_FRAME_ID                   (0x258u)
 
 /* Frame lengths in bytes. */
-#define STUB_EXAMPLE_MESSAGE_LENGTH (8u)
-#define STUB_EXAMPLE_MESSAGE2_LENGTH (8u)
-#define STUB_FUNCTION_EXAMPLE_LENGTH (8u)
-#define STUB_UNSIGNED_TYPES_LENGTH (16u)
-#define STUB_SIGNED_TYPES_LENGTH (16u)
-#define STUB_FLOAT_TYPES_LENGTH (16u)
-#define STUB_SCHEDULED_MESSAGE_LENGTH (8u)
-#define STUB_MUX_MESSAGE_LENGTH (12u)
+#define STUB_EXAMPLE_MESSAGE_LENGTH                 (8u)
+#define STUB_EXAMPLE_MESSAGE2_LENGTH                (8u)
+#define STUB_FUNCTION_EXAMPLE_LENGTH                (8u)
+#define STUB_UNSIGNED_TYPES_LENGTH                  (16u)
+#define STUB_SIGNED_TYPES_LENGTH                    (16u)
+#define STUB_FLOAT_TYPES_LENGTH                     (16u)
+#define STUB_SCHEDULED_MESSAGE_LENGTH               (8u)
+#define STUB_MUX_MESSAGE_LENGTH                     (12u)
 
 /* Extended or standard frame types. */
-#define STUB_EXAMPLE_MESSAGE_IS_EXTENDED (0)
-#define STUB_EXAMPLE_MESSAGE2_IS_EXTENDED (0)
-#define STUB_FUNCTION_EXAMPLE_IS_EXTENDED (0)
-#define STUB_UNSIGNED_TYPES_IS_EXTENDED (0)
-#define STUB_SIGNED_TYPES_IS_EXTENDED (0)
-#define STUB_FLOAT_TYPES_IS_EXTENDED (0)
-#define STUB_SCHEDULED_MESSAGE_IS_EXTENDED (0)
-#define STUB_MUX_MESSAGE_IS_EXTENDED (0)
+#define STUB_EXAMPLE_MESSAGE_IS_EXTENDED            (0)
+#define STUB_EXAMPLE_MESSAGE2_IS_EXTENDED           (0)
+#define STUB_FUNCTION_EXAMPLE_IS_EXTENDED           (0)
+#define STUB_UNSIGNED_TYPES_IS_EXTENDED             (0)
+#define STUB_SIGNED_TYPES_IS_EXTENDED               (0)
+#define STUB_FLOAT_TYPES_IS_EXTENDED                (0)
+#define STUB_SCHEDULED_MESSAGE_IS_EXTENDED          (0)
+#define STUB_MUX_MESSAGE_IS_EXTENDED                (0)
 
 /* Frame cycle times in milliseconds. */
-#define STUB_SCHEDULED_MESSAGE_CYCLE_TIME_MS (10u)
+#define STUB_SCHEDULED_MESSAGE_CYCLE_TIME_MS        (10u)
 
 /* Signal choices. */
 
 
 /* Frame Names. */
-#define STUB_EXAMPLE_MESSAGE_NAME "ExampleMessage"
-#define STUB_EXAMPLE_MESSAGE2_NAME "ExampleMessage2"
-#define STUB_FUNCTION_EXAMPLE_NAME "FunctionExample"
-#define STUB_UNSIGNED_TYPES_NAME "UnsignedTypes"
-#define STUB_SIGNED_TYPES_NAME "SignedTypes"
-#define STUB_FLOAT_TYPES_NAME "FloatTypes"
-#define STUB_SCHEDULED_MESSAGE_NAME "ScheduledMessage"
-#define STUB_MUX_MESSAGE_NAME "MuxMessage"
+#define STUB_EXAMPLE_MESSAGE_NAME                   "ExampleMessage"
+#define STUB_EXAMPLE_MESSAGE2_NAME                  "ExampleMessage2"
+#define STUB_FUNCTION_EXAMPLE_NAME                  "FunctionExample"
+#define STUB_UNSIGNED_TYPES_NAME                    "UnsignedTypes"
+#define STUB_SIGNED_TYPES_NAME                      "SignedTypes"
+#define STUB_FLOAT_TYPES_NAME                       "FloatTypes"
+#define STUB_SCHEDULED_MESSAGE_NAME                 "ScheduledMessage"
+#define STUB_MUX_MESSAGE_NAME                       "MuxMessage"
 
 /* Signal Names. */
-#define STUB_EXAMPLE_MESSAGE_ENABLE_NAME "Enable"
-#define STUB_EXAMPLE_MESSAGE_AVERAGE_RADIUS_NAME "AverageRadius"
-#define STUB_EXAMPLE_MESSAGE_TEMPERATURE_NAME "Temperature"
-#define STUB_EXAMPLE_MESSAGE2_RADIUS_NAME "Radius"
-#define STUB_FUNCTION_EXAMPLE_CRC_NAME "Crc"
-#define STUB_FUNCTION_EXAMPLE_ALIVE_NAME "Alive"
-#define STUB_FUNCTION_EXAMPLE_FOO_NAME "Foo"
-#define STUB_FUNCTION_EXAMPLE_BAR_NAME "Bar"
-#define STUB_UNSIGNED_TYPES_U_INT8_SIGNAL_NAME "UInt8Signal"
-#define STUB_UNSIGNED_TYPES_U_INT16_SIGNAL_NAME "UInt16Signal"
-#define STUB_UNSIGNED_TYPES_U_INT32_SIGNAL_NAME "UInt32Signal"
-#define STUB_UNSIGNED_TYPES_U_INT64_SIGNAL_NAME "UInt64Signal"
-#define STUB_SIGNED_TYPES_INT8_SIGNAL_NAME "Int8Signal"
-#define STUB_SIGNED_TYPES_INT16_SIGNAL_NAME "Int16Signal"
-#define STUB_SIGNED_TYPES_INT32_SIGNAL_NAME "Int32Signal"
-#define STUB_SIGNED_TYPES_INT64_SIGNAL_NAME "Int64Signal"
-#define STUB_FLOAT_TYPES_DOUBLE_SIGNAL_NAME "DoubleSignal"
-#define STUB_FLOAT_TYPES_FLOAT_SIGNAL_NAME "FloatSignal"
+#define STUB_EXAMPLE_MESSAGE_ENABLE_NAME            "Enable"
+#define STUB_EXAMPLE_MESSAGE_AVERAGE_RADIUS_NAME    "AverageRadius"
+#define STUB_EXAMPLE_MESSAGE_TEMPERATURE_NAME       "Temperature"
+#define STUB_EXAMPLE_MESSAGE2_RADIUS_NAME           "Radius"
+#define STUB_FUNCTION_EXAMPLE_CRC_NAME              "Crc"
+#define STUB_FUNCTION_EXAMPLE_ALIVE_NAME            "Alive"
+#define STUB_FUNCTION_EXAMPLE_FOO_NAME              "Foo"
+#define STUB_FUNCTION_EXAMPLE_BAR_NAME              "Bar"
+#define STUB_UNSIGNED_TYPES_U_INT8_SIGNAL_NAME      "UInt8Signal"
+#define STUB_UNSIGNED_TYPES_U_INT16_SIGNAL_NAME     "UInt16Signal"
+#define STUB_UNSIGNED_TYPES_U_INT32_SIGNAL_NAME     "UInt32Signal"
+#define STUB_UNSIGNED_TYPES_U_INT64_SIGNAL_NAME     "UInt64Signal"
+#define STUB_SIGNED_TYPES_INT8_SIGNAL_NAME          "Int8Signal"
+#define STUB_SIGNED_TYPES_INT16_SIGNAL_NAME         "Int16Signal"
+#define STUB_SIGNED_TYPES_INT32_SIGNAL_NAME         "Int32Signal"
+#define STUB_SIGNED_TYPES_INT64_SIGNAL_NAME         "Int64Signal"
+#define STUB_FLOAT_TYPES_DOUBLE_SIGNAL_NAME         "DoubleSignal"
+#define STUB_FLOAT_TYPES_FLOAT_SIGNAL_NAME          "FloatSignal"
 #define STUB_SCHEDULED_MESSAGE_SCHEDULE_SIGNAL_NAME "ScheduleSignal"
-#define STUB_MUX_MESSAGE_HEADER_ID_NAME "Header_ID"
-#define STUB_MUX_MESSAGE_HEADER_DLC_NAME "Header_DLC"
-#define STUB_MUX_MESSAGE_FOO_DOUBLE_NAME "FooDouble"
-#define STUB_MUX_MESSAGE_BAR_FLOAT_NAME "BarFloat"
+#define STUB_MUX_MESSAGE_HEADER_ID_NAME             "Header_ID"
+#define STUB_MUX_MESSAGE_HEADER_DLC_NAME            "Header_DLC"
+#define STUB_MUX_MESSAGE_FOO_DOUBLE_NAME            "FooDouble"
+#define STUB_MUX_MESSAGE_BAR_FLOAT_NAME             "BarFloat"
 
 /**
  * Signals in message ExampleMessage.
@@ -341,9 +341,7 @@ struct stub_mux_message_t {
  * @return Size of packed data, or negative error code.
  */
 int stub_example_message_pack(
-    uint8_t *dst_p,
-    const struct stub_example_message_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_example_message_t* src_p, size_t size);
 
 /**
  * Unpack message ExampleMessage.
@@ -355,9 +353,7 @@ int stub_example_message_pack(
  * @return zero(0) or negative error code.
  */
 int stub_example_message_unpack(
-    struct stub_example_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_example_message_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from ExampleMessage.
@@ -366,7 +362,7 @@ int stub_example_message_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_example_message_init(struct stub_example_message_t *msg_p);
+int stub_example_message_init(struct stub_example_message_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -459,9 +455,7 @@ bool stub_example_message_temperature_is_in_range(int16_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_example_message2_pack(
-    uint8_t *dst_p,
-    const struct stub_example_message2_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_example_message2_t* src_p, size_t size);
 
 /**
  * Unpack message ExampleMessage2.
@@ -473,9 +467,7 @@ int stub_example_message2_pack(
  * @return zero(0) or negative error code.
  */
 int stub_example_message2_unpack(
-    struct stub_example_message2_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_example_message2_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from ExampleMessage2.
@@ -484,7 +476,7 @@ int stub_example_message2_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_example_message2_init(struct stub_example_message2_t *msg_p);
+int stub_example_message2_init(struct stub_example_message2_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -523,9 +515,7 @@ bool stub_example_message2_radius_is_in_range(uint8_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_function_example_pack(
-    uint8_t *dst_p,
-    const struct stub_function_example_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_function_example_t* src_p, size_t size);
 
 /**
  * Unpack message FunctionExample.
@@ -537,9 +527,7 @@ int stub_function_example_pack(
  * @return zero(0) or negative error code.
  */
 int stub_function_example_unpack(
-    struct stub_function_example_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_function_example_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from FunctionExample.
@@ -548,7 +536,7 @@ int stub_function_example_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_function_example_init(struct stub_function_example_t *msg_p);
+int stub_function_example_init(struct stub_function_example_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -668,9 +656,7 @@ bool stub_function_example_bar_is_in_range(uint8_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_unsigned_types_pack(
-    uint8_t *dst_p,
-    const struct stub_unsigned_types_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_unsigned_types_t* src_p, size_t size);
 
 /**
  * Unpack message UnsignedTypes.
@@ -682,9 +668,7 @@ int stub_unsigned_types_pack(
  * @return zero(0) or negative error code.
  */
 int stub_unsigned_types_unpack(
-    struct stub_unsigned_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_unsigned_types_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from UnsignedTypes.
@@ -693,7 +677,7 @@ int stub_unsigned_types_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_unsigned_types_init(struct stub_unsigned_types_t *msg_p);
+int stub_unsigned_types_init(struct stub_unsigned_types_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -813,9 +797,7 @@ bool stub_unsigned_types_u_int64_signal_is_in_range(uint64_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_signed_types_pack(
-    uint8_t *dst_p,
-    const struct stub_signed_types_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_signed_types_t* src_p, size_t size);
 
 /**
  * Unpack message SignedTypes.
@@ -827,9 +809,7 @@ int stub_signed_types_pack(
  * @return zero(0) or negative error code.
  */
 int stub_signed_types_unpack(
-    struct stub_signed_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_signed_types_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from SignedTypes.
@@ -838,7 +818,7 @@ int stub_signed_types_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_signed_types_init(struct stub_signed_types_t *msg_p);
+int stub_signed_types_init(struct stub_signed_types_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -958,9 +938,7 @@ bool stub_signed_types_int64_signal_is_in_range(int64_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_float_types_pack(
-    uint8_t *dst_p,
-    const struct stub_float_types_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_float_types_t* src_p, size_t size);
 
 /**
  * Unpack message FloatTypes.
@@ -972,9 +950,7 @@ int stub_float_types_pack(
  * @return zero(0) or negative error code.
  */
 int stub_float_types_unpack(
-    struct stub_float_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_float_types_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from FloatTypes.
@@ -983,7 +959,7 @@ int stub_float_types_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_float_types_init(struct stub_float_types_t *msg_p);
+int stub_float_types_init(struct stub_float_types_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -1049,9 +1025,7 @@ bool stub_float_types_float_signal_is_in_range(float value);
  * @return Size of packed data, or negative error code.
  */
 int stub_scheduled_message_pack(
-    uint8_t *dst_p,
-    const struct stub_scheduled_message_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_scheduled_message_t* src_p, size_t size);
 
 /**
  * Unpack message ScheduledMessage.
@@ -1063,9 +1037,7 @@ int stub_scheduled_message_pack(
  * @return zero(0) or negative error code.
  */
 int stub_scheduled_message_unpack(
-    struct stub_scheduled_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_scheduled_message_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from ScheduledMessage.
@@ -1074,7 +1046,7 @@ int stub_scheduled_message_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_scheduled_message_init(struct stub_scheduled_message_t *msg_p);
+int stub_scheduled_message_init(struct stub_scheduled_message_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.
@@ -1113,9 +1085,7 @@ bool stub_scheduled_message_schedule_signal_is_in_range(uint8_t value);
  * @return Size of packed data, or negative error code.
  */
 int stub_mux_message_pack(
-    uint8_t *dst_p,
-    const struct stub_mux_message_t *src_p,
-    size_t size);
+    uint8_t* dst_p, const struct stub_mux_message_t* src_p, size_t size);
 
 /**
  * Unpack message MuxMessage.
@@ -1127,9 +1097,7 @@ int stub_mux_message_pack(
  * @return zero(0) or negative error code.
  */
 int stub_mux_message_unpack(
-    struct stub_mux_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size);
+    struct stub_mux_message_t* dst_p, const uint8_t* src_p, size_t size);
 
 /**
  * Init message fields to default values from MuxMessage.
@@ -1138,7 +1106,7 @@ int stub_mux_message_unpack(
  *
  * @return zero(0) on success or (-1) in case of nullptr argument.
  */
-int stub_mux_message_init(struct stub_mux_message_t *msg_p);
+int stub_mux_message_init(struct stub_mux_message_t* msg_p);
 
 /**
  * Encode given signal by applying scaling and offset.

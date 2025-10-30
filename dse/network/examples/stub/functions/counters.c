@@ -9,7 +9,7 @@
 #include "function.h"
 
 
-#define UNUSED(x)                ((void)x)
+#define UNUSED(x) ((void)x)
 
 
 /**
@@ -50,7 +50,8 @@ Annotations
 position
 : The position of the counter in the message packet.
  */
-int counter_inc_uint8(NetworkFunction* function, uint8_t* payload, size_t payload_len)
+int counter_inc_uint8(
+    NetworkFunction* function, uint8_t* payload, size_t payload_len)
 {
     UNUSED(payload_len);
 

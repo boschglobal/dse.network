@@ -310,8 +310,8 @@ void test_network_parse_container(void** state)
     assert_int_equal(m->frame_id, 600);
     assert_null(m->container);
     assert_int_equal(m->mux_id, 0);
-    assert_null(m->mux_signal); // Not set until marshal list is built.
-    //assert_ptr_equal(m->mux_signal, &m->signals[0]);
+    assert_null(m->mux_signal);  // Not set until marshal list is built.
+    // assert_ptr_equal(m->mux_signal, &m->signals[0]);
     assert_string_equal(m->signals[0].name, "header_id");
     assert_int_equal(m->signals[0].internal, 0);
     assert_int_equal(m->signals[0].mux_signal, 1);

@@ -11,12 +11,12 @@
 typedef struct {
     ModelDesc model;
     /* Signal Interface. */
-    double* pedal_linear;
-    double* pedal_pos;
-    double* brake_force;
+    double*   pedal_linear;
+    double*   pedal_pos;
+    double*   brake_force;
     /* Pedal Interface (HMI). */
-    double* hmi_pedal_pos;
-    double* hmi_pedal_force;
+    double*   hmi_pedal_pos;
+    double*   hmi_pedal_force;
 } PedalModelDesc;
 
 static inline double* _index(PedalModelDesc* m, const char* v, const char* s)

@@ -2,33 +2,27 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-###############
-## DSE C Library
-export DSE_CLIB_VERSION ?= 1.0.18
 
+################
+## DSE Projects.
+export PACKAGE_ARCH ?= linux-amd64
 
-###############
-## DSE Model C Library
-export DSE_MODELC_VERSION ?= 2.1.1
+DSE_CLIB_REPO ?= https://github.com/boschglobal/dse.clib
+DSE_CLIB_VERSION ?= 1.0.41
+export DSE_CLIB_URL ?= $(DSE_CLIB_REPO)/archive/refs/tags/v$(DSE_CLIB_VERSION).zip
+
+DSE_MODELC_REPO ?= https://github.com/boschglobal/dse.modelc
+DSE_MODELC_VERSION ?= 2.2.15
+export DSE_MODELC_URL ?= $(DSE_MODELC_REPO)/archive/refs/tags/v$(DSE_MODELC_VERSION).zip
+export DSE_MODELC_LIB_URL ?= $(DSE_MODELC_REPO)/releases/download/v$(DSE_MODELC_VERSION)/ModelC-$(DSE_MODELC_VERSION)-$(PACKAGE_ARCH).zip
 
 
 ###############
 ## Docker Images.
-GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:main
+GCC_BUILDER_IMAGE ?= ghcr.io/boschglobal/dse-gcc-builder:latest
 TESTSCRIPT_IMAGE ?= ghcr.io/boschglobal/dse-testscript:latest
 SIMER_IMAGE ?= ghcr.io/boschglobal/dse-simer:$(DSE_MODELC_VERSION)
-
-
-###############
-## Build parameters.
-export NAMESPACE = dse
-export MODULE = network
-export EXTERNAL_BUILD_DIR ?= /tmp/$(NAMESPACE).$(MODULE)
-export PACKAGE_ARCH ?= linux-amd64
-export PACKAGE_ARCH_LIST ?= $(PACKAGE_ARCH)
-export CMAKE_TOOLCHAIN_FILE ?= $(shell pwd -P)/extra/cmake/$(PACKAGE_ARCH).cmake
-SUBDIRS = $(NAMESPACE)/$(MODULE)
-export MODELC_SANDBOX_DIR ?= $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_deps/dse_modelc-src
+DSE_CLANG_FORMAT_IMAGE ?= ghcr.io/boschglobal/dse-clang-format:latest
 
 
 ###############
@@ -37,12 +31,14 @@ TOOL_DIRS = network
 
 
 ###############
-## Test Parameters.
-export HOST_DOCKER_WORKSPACE ?= $(shell pwd -P)
-export TESTSCRIPT_E2E_DIR ?= tests/testscript/e2e
-TESTSCRIPT_E2E_FILES = $(wildcard $(TESTSCRIPT_E2E_DIR)/*.txtar)
-NETWORK_IMAGE ?= $(NAMESPACE)-$(MODULE)
-NETWORK_TAG ?= test
+## Build parameters.
+export NAMESPACE = dse
+export MODULE = network
+export EXTERNAL_BUILD_DIR ?= /tmp/$(NAMESPACE).$(MODULE)
+export PACKAGE_ARCH_LIST ?= $(PACKAGE_ARCH)
+export CMAKE_TOOLCHAIN_FILE ?= $(shell pwd -P)/extra/cmake/$(PACKAGE_ARCH).cmake
+export MODELC_SANDBOX_DIR ?= $(shell pwd -P)/$(NAMESPACE)/$(MODULE)/build/_deps/dse_modelc-src
+SUBDIRS = $(NAMESPACE)/$(MODULE)
 
 
 ###############
@@ -56,22 +52,37 @@ PACKAGE_NAME_LC = network
 PACKAGE_PATH = $(NAMESPACE)/dist
 
 
+###############
+## Test Parameters.
+export HOST_DOCKER_WORKSPACE ?= $(shell pwd -P)
+export TESTSCRIPT_E2E_DIR ?= tests/testscript/e2e
+TESTSCRIPT_E2E_FILES = $(wildcard $(TESTSCRIPT_E2E_DIR)/*.txtar)
+NETWORK_IMAGE ?= $(NAMESPACE)-$(MODULE)
+NETWORK_TAG ?= test
+
+
 
 ifneq ($(CI), true)
-	DOCKER_BUILDER_CMD := docker run -it --rm \
+DOCKER_BUILDER_CMD := \
+	mkdir -p $(EXTERNAL_BUILD_DIR); \
+	docker run -it --rm \
+		--user $$(id -u):$$(id -g) \
 		--env CMAKE_TOOLCHAIN_FILE=/tmp/repo/extra/cmake/$(PACKAGE_ARCH).cmake \
 		--env EXTERNAL_BUILD_DIR=$(EXTERNAL_BUILD_DIR) \
 		--env GDB_CMD="$(GDB_CMD)" \
 		--env PACKAGE_ARCH=$(PACKAGE_ARCH) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		--env MAKE_NPROC=$(MAKE_NPROC) \
 		--volume $$(pwd):/tmp/repo \
 		--volume $(EXTERNAL_BUILD_DIR):$(EXTERNAL_BUILD_DIR) \
-		--volume ~/.ccache:/root/.ccache \
 		--workdir /tmp/repo \
 		$(GCC_BUILDER_IMAGE)
 endif
 
-
+DSE_CLANG_FORMAT_CMD := docker run -it --rm \
+	--user $$(id -u):$$(id -g) \
+	--volume $$(pwd):/tmp/code \
+	${DSE_CLANG_FORMAT_IMAGE}
 
 default: build
 
@@ -152,6 +163,15 @@ cleanall:
 oss:
 	@${DOCKER_BUILDER_CMD} $(MAKE) do-oss
 
+.PHONY: generate
+generate:
+	$(MAKE) -C doc generate
+
+.PHONY: format
+format:
+	@${DSE_CLANG_FORMAT_CMD} dse
+	@${DSE_CLANG_FORMAT_CMD} tests/cmocka/
+
 .PHONY: do-build
 do-build:
 	@for d in $(SUBDIRS); do ($(MAKE) -C $$d build ); done
@@ -178,10 +198,6 @@ do-cleanall: do-clean
 do-oss:
 	$(MAKE) -C extra/external oss
 
-.PHONY: generate
-generate:
-	$(MAKE) -C doc generate
-
 .PHONY: super-linter
 super-linter:
 	docker run --rm --volume $$(pwd):/tmp/lint \
@@ -195,5 +211,5 @@ super-linter:
 		--env VALIDATE_PYTHON_PYLINT=true \
 		--env VALIDATE_PYTHON_FLAKE8=true \
 		--env VALIDATE_YAML=true \
-		ghcr.io/super-linter/super-linter:slim-v6
+		ghcr.io/super-linter/super-linter:slim-v8
 #		--env VALIDATE_GO=true \

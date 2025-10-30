@@ -7,6 +7,7 @@
 #include <dse/modelc/model.h>
 #include <dse/network/network.h>
 #include <dse/ncodec/codec.h>
+#include <dse/ncodec/interface/frame.h>
 #include <dse/mocks/simmock.h>
 
 

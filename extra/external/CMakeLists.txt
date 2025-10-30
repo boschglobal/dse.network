@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.21)
+cmake_policy(SET CMP0135 NEW)
 
 project(External_Projects__dse_network)
 
@@ -32,37 +33,36 @@ include(FetchContent)
 include(ExternalProject)
 
 
-# External Project - DSE C Lib
-# ----------------------------
+# DSE C Lib
+# ---------
 FetchContent_Declare(dse_clib
-    URL                 ${ExternalProject__CLIB__URL}
-    HTTP_USERNAME       ${ExternalProject__CLIB__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__CLIB__PASSWORD}
+    URL                 $ENV{DSE_CLIB_URL}
+    HTTP_USERNAME       $ENV{DSE_CLIB_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_CLIB_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.clib"
 )
 FetchContent_MakeAvailable(dse_clib)
 set(DSE_CLIB_SOURCE_DIR ${dse_clib_SOURCE_DIR}/dse)
 set(DSE_CLIB_INCLUDE_DIR "${DSE_CLIB_SOURCE_DIR}/..")
 
-# External Project - DSE ModelC
-# -----------------------------
+# DSE ModelC
+# ----------
 FetchContent_Declare(dse_modelc
-    URL                 ${ExternalProject__MODELC__URL}
-    HTTP_USERNAME       ${ExternalProject__MODELC__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__MODELC__PASSWORD}
+    URL                 $ENV{DSE_MODELC_URL}
+    HTTP_USERNAME       $ENV{DSE_MODELC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_MODELC_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.modelc"
 )
 FetchContent_MakeAvailable(dse_modelc)
 set(DSE_MODELC_SOURCE_DIR ${dse_modelc_SOURCE_DIR}/dse/modelc)
 set(DSE_MODELC_INCLUDE_DIR "${DSE_MODELC_SOURCE_DIR}/../..")
 
-
-# External Project - DSE ModelC LIB
-# ---------------------------------
+# DSE ModelC LIB
+# --------------
 FetchContent_Declare(dse_modelc_lib
-    URL                 ${ExternalProject__MODELC_LIB__URL}
-    HTTP_USERNAME       ${ExternalProject__MODELC_LIB__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__MODELC_LIB__PASSWORD}
+    URL                 $ENV{DSE_MODELC_LIB_URL}
+    HTTP_USERNAME       $ENV{DSE_MODELC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_MODELC_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.modelc.lib"
 )
 FetchContent_MakeAvailable(dse_modelc_lib)

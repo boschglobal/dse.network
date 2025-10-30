@@ -19,7 +19,7 @@ build:
 # Build from scratch if no build dir.
 	if [ ! -d "build" ]; then make setup; fi
 # Build.
-	cd build; make
+	cd build; cmake --build . -j $(MAKE_NPROC)
 
 oss:
 	if [ ! -d "build" ]; then make setup; fi

@@ -68,8 +68,7 @@ ModelDesc* model_create(ModelDesc* model)
     /* Locate the Network signal. */
     const char* network_signal = NULL;
     for (uint32_t i = 0; i < m->sv_network->count; i++) {
-        const char* name =
-            signal_annotation(m->sv_network, i, "network", NULL);
+        const char* name = signal_annotation(m->sv_network, i, "network", NULL);
         if (name == NULL) continue;
         if (strcmp(name, m->network.name) == 0) {
             network_signal = m->sv_network->signal[i];

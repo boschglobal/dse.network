@@ -11,10 +11,10 @@
 typedef struct {
     ModelDesc model;
     /* Signal Interface. */
-    double* pedal_fault;
-    double* pedal_linear;
-    double* pedal_pos;
-    double* brake_force;
+    double*   pedal_fault;
+    double*   pedal_linear;
+    double*   pedal_pos;
+    double*   brake_force;
 } BrakeModelDesc;
 
 static inline double* _index(BrakeModelDesc* m, const char* v, const char* s)
@@ -47,11 +47,11 @@ int model_step(ModelDesc* model, double* model_time, double stop_time)
     BrakeModelDesc* m = (BrakeModelDesc*)model;
 
     /* Calculate the brake request force. */
-    double brake_request = 0; // 0..1
+    double brake_request = 0;  // 0..1
     if (*m->pedal_fault) {
         // Fall back to linear pedal (0..5 volts -> 0..1).
         brake_request = (*m->pedal_linear / 5.0);
-    } else{
+    } else {
         brake_request = *m->pedal_pos;
     }
 

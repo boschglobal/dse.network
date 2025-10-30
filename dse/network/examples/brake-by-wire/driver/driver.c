@@ -8,19 +8,19 @@
 #include <dse/logger.h>
 
 
-#define UNUSED(x)     ((void)x)
+#define UNUSED(x) ((void)x)
 
 
 typedef struct {
     ModelDesc model;
     /* Pedal Interface (HMI). */
-    double* hmi_pedal_pos;
-    double* hmi_pedal_force;
+    double*   hmi_pedal_pos;
+    double*   hmi_pedal_force;
     /* Warning Lights. */
-    double* hmi_check_engine;
+    double*   hmi_check_engine;
     /* Vehicle Network. */
-    double* check_engine_set;
-    double* check_engine_clear;
+    double*   check_engine_set;
+    double*   check_engine_clear;
 } DriverModelDesc;
 
 static inline double* _index(DriverModelDesc* m, const char* v, const char* s)
@@ -58,7 +58,8 @@ int model_step(ModelDesc* model, double* model_time, double stop_time)
 
     // TODO manage the check engine lamp
 
-    // TODO emit a log file for graphical presentation ??? also for other signals ??
+    // TODO emit a log file for graphical presentation ??? also for other
+    // signals ??
 
 
     /* Complete the step. */

@@ -114,7 +114,8 @@ void test_function_decode(void** state)
     network->signal_vector[6] = 0;
     network->signal_vector[7] = 0;
 
-    /* Call the message decode functions (fake call to network_decode_from_bus). */
+    /* Call the message decode functions (fake call to network_decode_from_bus).
+     */
     nm_p->unpack_func(nm_p->buffer, payload, length);
     nm_p->update_signals = true;
     network_function_apply_decode(network);
@@ -175,10 +176,12 @@ void test_function_decode_EBADMSG(void** state)
     network->signal_vector[6] = 0;
     network->signal_vector[7] = 0;
 
-    /* Inject a CRC fault, which should result in EBADMSG from decode function. */
+    /* Inject a CRC fault, which should result in EBADMSG from decode function.
+     */
     ((uint8_t*)payload)[(0) / sizeof(uint8_t)] = 58;
 
-    /* Call the message decode functions (fake call to network_decode_from_bus). */
+    /* Call the message decode functions (fake call to network_decode_from_bus).
+     */
     nm_p->unpack_func(nm_p->buffer, payload, length);
     nm_p->update_signals = true;
     network_function_apply_decode(network);

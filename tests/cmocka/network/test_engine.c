@@ -393,7 +393,7 @@ void test_engine_marshal_to_single_signal(void** state)
 {
     UNUSED(state);
 
-     /* Get the Mock objects. */
+    /* Get the Mock objects. */
     NetworkMock* mock = *state;
     Network*     n = mock->network;
 

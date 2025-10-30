@@ -33,137 +33,103 @@
 #include "stub.h"
 
 static inline uint8_t pack_left_shift_u8(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value << shift) & mask);
 }
 
 static inline uint8_t pack_left_shift_u16(
-    uint16_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint16_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value << shift) & mask);
 }
 
 static inline uint8_t pack_left_shift_u32(
-    uint32_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint32_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value << shift) & mask);
 }
 
 static inline uint8_t pack_left_shift_u64(
-    uint64_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint64_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value << shift) & mask);
 }
 
 static inline uint8_t pack_right_shift_u8(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value >> shift) & mask);
 }
 
 static inline uint8_t pack_right_shift_u16(
-    uint16_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint16_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value >> shift) & mask);
 }
 
 static inline uint8_t pack_right_shift_u32(
-    uint32_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint32_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value >> shift) & mask);
 }
 
 static inline uint8_t pack_right_shift_u64(
-    uint64_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint64_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value >> shift) & mask);
 }
 
 static inline uint8_t unpack_left_shift_u8(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value & mask) << shift);
 }
 
 static inline uint16_t unpack_left_shift_u16(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint16_t)((uint16_t)(value & mask) << shift);
 }
 
 static inline uint32_t unpack_left_shift_u32(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint32_t)((uint32_t)(value & mask) << shift);
 }
 
 static inline uint64_t unpack_left_shift_u64(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint64_t)((uint64_t)(value & mask) << shift);
 }
 
 static inline uint8_t unpack_right_shift_u8(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint8_t)((uint8_t)(value & mask) >> shift);
 }
 
 static inline uint16_t unpack_right_shift_u16(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint16_t)((uint16_t)(value & mask) >> shift);
 }
 
 static inline uint32_t unpack_right_shift_u32(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint32_t)((uint32_t)(value & mask) >> shift);
 }
 
 static inline uint64_t unpack_right_shift_u64(
-    uint8_t value,
-    uint8_t shift,
-    uint8_t mask)
+    uint8_t value, uint8_t shift, uint8_t mask)
 {
     return (uint64_t)((uint64_t)(value & mask) >> shift);
 }
 
 int stub_example_message_pack(
-    uint8_t *dst_p,
-    const struct stub_example_message_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_example_message_t* src_p, size_t size)
 {
     uint16_t temperature;
 
@@ -184,9 +150,7 @@ int stub_example_message_pack(
 }
 
 int stub_example_message_unpack(
-    struct stub_example_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_example_message_t* dst_p, const uint8_t* src_p, size_t size)
 {
     uint16_t temperature;
 
@@ -209,7 +173,7 @@ int stub_example_message_unpack(
     return (0);
 }
 
-int stub_example_message_init(struct stub_example_message_t *msg_p)
+int stub_example_message_init(struct stub_example_message_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -264,9 +228,7 @@ bool stub_example_message_temperature_is_in_range(int16_t value)
 }
 
 int stub_example_message2_pack(
-    uint8_t *dst_p,
-    const struct stub_example_message2_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_example_message2_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -280,9 +242,7 @@ int stub_example_message2_pack(
 }
 
 int stub_example_message2_unpack(
-    struct stub_example_message2_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_example_message2_t* dst_p, const uint8_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -293,7 +253,7 @@ int stub_example_message2_unpack(
     return (0);
 }
 
-int stub_example_message2_init(struct stub_example_message2_t *msg_p)
+int stub_example_message2_init(struct stub_example_message2_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -318,9 +278,7 @@ bool stub_example_message2_radius_is_in_range(uint8_t value)
 }
 
 int stub_function_example_pack(
-    uint8_t *dst_p,
-    const struct stub_function_example_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_function_example_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -337,9 +295,7 @@ int stub_function_example_pack(
 }
 
 int stub_function_example_unpack(
-    struct stub_function_example_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_function_example_t* dst_p, const uint8_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -353,7 +309,7 @@ int stub_function_example_unpack(
     return (0);
 }
 
-int stub_function_example_init(struct stub_function_example_t *msg_p)
+int stub_function_example_init(struct stub_function_example_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -431,9 +387,7 @@ bool stub_function_example_bar_is_in_range(uint8_t value)
 }
 
 int stub_unsigned_types_pack(
-    uint8_t *dst_p,
-    const struct stub_unsigned_types_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_unsigned_types_t* src_p, size_t size)
 {
     if (size < 16u) {
         return (-EINVAL);
@@ -465,9 +419,7 @@ int stub_unsigned_types_pack(
 }
 
 int stub_unsigned_types_unpack(
-    struct stub_unsigned_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_unsigned_types_t* dst_p, const uint8_t* src_p, size_t size)
 {
     if (size < 16u) {
         return (-EINVAL);
@@ -496,7 +448,7 @@ int stub_unsigned_types_unpack(
     return (0);
 }
 
-int stub_unsigned_types_init(struct stub_unsigned_types_t *msg_p)
+int stub_unsigned_types_init(struct stub_unsigned_types_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -566,14 +518,12 @@ bool stub_unsigned_types_u_int64_signal_is_in_range(uint64_t value)
 }
 
 int stub_signed_types_pack(
-    uint8_t *dst_p,
-    const struct stub_signed_types_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_signed_types_t* src_p, size_t size)
 {
     uint16_t int16_signal;
     uint32_t int32_signal;
     uint64_t int64_signal;
-    uint8_t int8_signal;
+    uint8_t  int8_signal;
 
     if (size < 16u) {
         return (-EINVAL);
@@ -609,14 +559,12 @@ int stub_signed_types_pack(
 }
 
 int stub_signed_types_unpack(
-    struct stub_signed_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_signed_types_t* dst_p, const uint8_t* src_p, size_t size)
 {
     uint16_t int16_signal;
     uint32_t int32_signal;
     uint64_t int64_signal;
-    uint8_t int8_signal;
+    uint8_t  int8_signal;
 
     if (size < 16u) {
         return (-EINVAL);
@@ -649,7 +597,7 @@ int stub_signed_types_unpack(
     return (0);
 }
 
-int stub_signed_types_init(struct stub_signed_types_t *msg_p)
+int stub_signed_types_init(struct stub_signed_types_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -721,9 +669,7 @@ bool stub_signed_types_int64_signal_is_in_range(int64_t value)
 }
 
 int stub_float_types_pack(
-    uint8_t *dst_p,
-    const struct stub_float_types_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_float_types_t* src_p, size_t size)
 {
     uint32_t float_signal;
     uint64_t double_signal;
@@ -753,9 +699,7 @@ int stub_float_types_pack(
 }
 
 int stub_float_types_unpack(
-    struct stub_float_types_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_float_types_t* dst_p, const uint8_t* src_p, size_t size)
 {
     uint32_t float_signal;
     uint64_t double_signal;
@@ -782,7 +726,7 @@ int stub_float_types_unpack(
     return (0);
 }
 
-int stub_float_types_init(struct stub_float_types_t *msg_p)
+int stub_float_types_init(struct stub_float_types_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -826,9 +770,7 @@ bool stub_float_types_float_signal_is_in_range(float value)
 }
 
 int stub_scheduled_message_pack(
-    uint8_t *dst_p,
-    const struct stub_scheduled_message_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_scheduled_message_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -842,9 +784,7 @@ int stub_scheduled_message_pack(
 }
 
 int stub_scheduled_message_unpack(
-    struct stub_scheduled_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_scheduled_message_t* dst_p, const uint8_t* src_p, size_t size)
 {
     if (size < 8u) {
         return (-EINVAL);
@@ -855,7 +795,7 @@ int stub_scheduled_message_unpack(
     return (0);
 }
 
-int stub_scheduled_message_init(struct stub_scheduled_message_t *msg_p)
+int stub_scheduled_message_init(struct stub_scheduled_message_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 
@@ -880,9 +820,7 @@ bool stub_scheduled_message_schedule_signal_is_in_range(uint8_t value)
 }
 
 int stub_mux_message_pack(
-    uint8_t *dst_p,
-    const struct stub_mux_message_t *src_p,
-    size_t size)
+    uint8_t* dst_p, const struct stub_mux_message_t* src_p, size_t size)
 {
     uint32_t bar_float;
     uint64_t foo_double;
@@ -899,7 +837,6 @@ int stub_mux_message_pack(
     dst_p[3] |= pack_left_shift_u8(src_p->header_dlc, 0u, 0xffu);
 
     switch (src_p->header_id) {
-
     case 601:
         memcpy(&foo_double, &src_p->foo_double, sizeof(foo_double));
         dst_p[4] |= pack_left_shift_u64(foo_double, 0u, 0xffu);
@@ -928,9 +865,7 @@ int stub_mux_message_pack(
 }
 
 int stub_mux_message_unpack(
-    struct stub_mux_message_t *dst_p,
-    const uint8_t *src_p,
-    size_t size)
+    struct stub_mux_message_t* dst_p, const uint8_t* src_p, size_t size)
 {
     uint32_t bar_float;
     uint64_t foo_double;
@@ -945,7 +880,6 @@ int stub_mux_message_unpack(
     dst_p->header_dlc = unpack_right_shift_u8(src_p[3], 0u, 0xffu);
 
     switch (dst_p->header_id) {
-
     case 601:
         foo_double = unpack_right_shift_u64(src_p[4], 0u, 0xffu);
         foo_double |= unpack_left_shift_u64(src_p[5], 8u, 0xffu);
@@ -973,7 +907,7 @@ int stub_mux_message_unpack(
     return (0);
 }
 
-int stub_mux_message_init(struct stub_mux_message_t *msg_p)
+int stub_mux_message_init(struct stub_mux_message_t* msg_p)
 {
     if (msg_p == NULL) return -1;
 

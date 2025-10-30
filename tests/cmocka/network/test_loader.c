@@ -41,7 +41,7 @@ void test_network_load_message_funcs(void** state)
         // End.
         { .name = NULL },
     };
-    Network        network = { .name = "stub", .messages = network_message };
+    Network network = { .name = "stub", .messages = network_message };
 
     /* Load the DLL. */
     void* handle =

@@ -48,7 +48,8 @@ Annotations
 position
 : The position of the CRC in the message packet.
  */
-int crc_generate(NetworkFunction* function, uint8_t* payload, size_t payload_len)
+int crc_generate(
+    NetworkFunction* function, uint8_t* payload, size_t payload_len)
 {
     if (payload == NULL || function == NULL) return EINVAL;
     InstanceData* inst = function->data;
@@ -113,7 +114,8 @@ Annotations
 position
 : The position of the CRC in the message packet.
  */
-int crc_validate(NetworkFunction* function, uint8_t* payload, size_t payload_len)
+int crc_validate(
+    NetworkFunction* function, uint8_t* payload, size_t payload_len)
 {
     if (payload == NULL || function == NULL) return EINVAL;
     InstanceData* inst = function->data;
