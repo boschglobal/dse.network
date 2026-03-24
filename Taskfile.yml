@@ -4,35 +4,56 @@ version: '3'
 metadata:
   package:
     download: '{{.REPO}}/releases/download/v{{.TAG}}/Network-{{.TAG}}-{{.PLATFORM_ARCH}}.zip'
+    file: 'dse/network/build/_dist/Network-{{coalesce .TAG .PACKAGE_VERSION "not-specified"}}-{{.PLATFORM_ARCH}}.zip'
   container:
     repository:
   models:
     dse.network:
-    name: network
-    displayName: dse.network
-    path: ''
-    mcl: false
-    workflows:
-      - generate
-    platforms:
-      - linux-amd64
-      - linux-x86
-      - linux-i386
-      - windows-x64
-      - windows-x86
-    channels:
-      - alias: signal_channel
-      - alias: network_channel
+      name: network
+      displayName: dse.network
+      path: ''
+      mcl: false
+      workflows:
+        - generate
+      platforms:
+        - linux-amd64
+        - linux-x86
+        - linux-i386
+        - windows-x64
+        - windows-x86
+      channels:
+        - alias: signal_channel
+        - alias: network_channel
 
 
 vars:
-  ENTRYDIR: '{{if .SIM}}{{.ENTRYDIR}}/{{.SIM}}{{else}}{{.PWD}}{{end}}'
-  NETWORK_IMAGE: ghcr.io/boschglobal/dse-network
-  NETWORK_TAG: latest
-  GCC_IMAGE: ghcr.io/boschglobal/dse-gcc-builder
-  GCC_TAG: main
+  # When running from E2E tests (i.e. Docker in Docker), the ENTRYDIR (for
+  # Docker commands) must be set to the host relative path.
+  ENTRYDIR: '{{if .SIM}}{{.ENTRYWORKDIR}}/{{.SIM}}{{else}}{{.PWD}}{{end}}'
+  # Container image specification.
+  REPO: 'https://github.com/boschglobal/dse.network'
+  REGISTRY: ghcr.io/boschglobal
+  TAG: '{{.TAG | default "latest"}}'
+  NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG}}{{end}}'
+  GCC_IMAGE: ghcr.io/boschglobal/dse-gcc-builder:latest
+  USER:
+    sh: id -u
+  GROUP:
+    sh: id -g
 
 tasks:
+
+  info:
+    run: always
+    dir: '{{.USER_WORKING_DIR}}'
+    label: dse:network:info
+    cmds:
+      - echo ENTRYDIR={{.ENTRYDIR}}
+      - echo NETWORK_IMAGE={{.NETWORK_IMAGE}}
+      - echo PACKAGE_VERSION={{.PACKAGE_VERSION}}
+      - echo PLATFORM_ARCH={{.PLATFORM_ARCH}}
+      - echo REPO={{.REPO}}
+      - echo TAG={{coalesce .TAG .PACKAGE_VERSION "not-specified"}}
 
   generate:
     run: always
@@ -58,6 +79,8 @@ tasks:
       NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
       - task: "{{if .ARXML}}convert-arxml{{else}}generate-dbc{{end}}"
+        vars:
+          DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
     requires:
       vars: [DBCFILE, SIGNAL, MIMETYPE]
     sources:
@@ -141,10 +164,9 @@ tasks:
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
       NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} convert-arxml {{.ARXML}} {{.OUTDIR}}
+      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} convert-arxml {{.ARXML}} {{.OUTDIR}}
       - task: find-dbc
     requires:
       vars: [ARXML, SIGNAL, MIMETYPE]
@@ -170,7 +192,6 @@ tasks:
       SIGNAL_PATCH: '{{.SIGNAL_PATCH | default ""}}'
       REMOVE_UNKNOWN: '{{.REMOVE_UNKNOWN | default ""}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
       NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
       DBC:
         sh: find {{.OUTDIR}} -type f \( -name '*.dbc' -o -name '*.DBC' \)
@@ -247,9 +268,8 @@ tasks:
       FILTER: '{{if .FILTER}}--filter {{.FILTER}}{{else}}{{end}}'
       CYCLE_TIME: "{{if .CYCLE_TIME}}--cycle_time '{{.CYCLE_TIME}}'{{else}}{{end}}"
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} gen-code
+      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} gen-code
           {{.DBCFILE}} {{.OUTDIR}}
           {{.FILTER}}
           {{.CYCLE_TIME}}
@@ -277,15 +297,14 @@ tasks:
       OBJECT_FILE: '{{.OUTDIR}}/{{.DBCNAME}}.o'
       MESSAGE_LIB_FILE: '{{.OUTDIR}}/{{.MESSAGE_LIB}}'
       IMAGE: '{{.IMAGE | default .GCC_IMAGE}}'
-      TAG: '{{.TAG | default .GCC_TAG}}'
       ARCH_FLAGS: '{{if eq .PLATFORM_ARCH "x86"}}-mx32{{else}}{{end}}'
       GCC_TOOLCHAIN_PREFIX: '{{if eq .PLATFORM_OS "windows"}}x86_64-w64-mingw32-{{else}}{{end}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}:{{.TAG}}
+      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}
           {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
-      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}:{{.TAG}}
+      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}
           {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
-      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}:{{.TAG}}
+      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.IMAGE}}
           {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
     requires:
       vars: [DBCFILE, OUTDIR]
@@ -314,9 +333,8 @@ tasks:
       LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
       ANNOTATIONS: '{{if .ANNOTATIONS}}--annotations {{.ANNOTATIONS}}{{else}}{{end}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} gen-network
+      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} gen-network
           --name {{.DBCNAME}}
           --header {{.HEADER_FILE}}
           --network {{.NETWORK_FILE}}
@@ -349,10 +367,9 @@ tasks:
       SIGNAL_PATCH: '{{if .SIGNAL_PATCH}}--signal_patch {{.SIGNAL_PATCH}}{{else}}{{end}}'
       REMOVE_UNKNOWN: '{{if .REMOVE_UNKNOWN}}--remove_unknown{{else}}{{end}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
       - if test -n '{{.FUNCTION_PATCH}}' || test -n '{{.SIGNAL_PATCH}}' ; then
-          docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} patch-network
+          docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} patch-network
             --network {{.NETWORK_FILE}}
             {{.FUNCTION_PATCH}}
             {{.SIGNAL_PATCH}}
@@ -381,11 +398,9 @@ tasks:
       NETWORK_FILE: '{{.OUTDIR}}/network.yaml'
       SIGGROUP_FILE: '{{.OUTDIR}}/signalgroup.yaml'
       LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
-
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} gen-signalgroup
+      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} gen-signalgroup
           --name {{.DBCNAME}}
           --network {{.NETWORK_FILE}}
           --signalgroup {{.SIGGROUP_FILE}}
@@ -410,9 +425,8 @@ tasks:
       MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
       IMAGE: '{{.IMAGE | default .NETWORK_IMAGE}}'
-      TAG: '{{.TAG | default .NETWORK_TAG}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}}:{{.TAG}} set-mimetype
+      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.IMAGE}} set-mimetype
           --output_directory {{.OUTDIR}}
           --signal {{.SIGNAL}}
           --mimetype "{{.MIMETYPE}}"
