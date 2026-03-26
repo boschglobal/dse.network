@@ -35,7 +35,7 @@ jobs:
           - windows-x86
           - windows-x64
     container:
-      image: ghcr.io/boschglobal/dse-gcc-builder:main
+      image: ghcr.io/boschglobal/dse-gcc-builder:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
