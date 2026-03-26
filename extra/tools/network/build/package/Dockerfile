@@ -39,6 +39,7 @@ RUN curl -fSL https://github.com/ccache/ccache/archive/refs/tags/v${CCACHE_VERSI
     && make; make install; which ccache;
 
 ADD third_party/cantools /src/third_party/cantools
+RUN git config --global --add safe.directory /tmp/cantools
 RUN set -eux; \
     ccache -c; \
     python -m venv /opt/venv; \
