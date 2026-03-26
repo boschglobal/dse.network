@@ -90,24 +90,6 @@ set(DSE_MODELC_LIB_MOCK_SOURCE_FILES
 )
 
 
-# External Project - DSE C Lib
-# ----------------------------
-FetchContent_Declare(dse_clib
-    URL                 ${ExternalProject__CLIB__URL}
-    HTTP_USERNAME       ${ExternalProject__CLIB__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__CLIB__PASSWORD}
-    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.clib"
-)
-FetchContent_MakeAvailable(dse_clib)
-set(DSE_CLIB_SOURCE_DIR ${dse_clib_SOURCE_DIR}/dse/clib)
-set(DSE_CLIB_SOURCE_FILES
-    ${DSE_CLIB_SOURCE_DIR}/util/yaml.c
-    ${DSE_CLIB_SOURCE_DIR}/collections/hashmap.c
-    ${DSE_CLIB_SOURCE_DIR}/collections/set.c
-)
-set(DSE_CLIB_INCLUDE_DIR "${DSE_CLIB_SOURCE_DIR}/../..")
-
-
 
 # Set the project paths
 # =====================
@@ -142,15 +124,14 @@ add_executable(test_network
     network/test_function.c
 
     ${DSE_NETWORK_SOURCE_FILES}
-    ${DSE_CLIB_SOURCE_FILES}
     ${DSE_MODELC_SOURCE_FILES}
 )
 target_include_directories(test_network
-    PRIVATE
+    PUBLIC
         ${DSE_NETWORK_INCLUDE_DIR}
         ${DSE_MODELC_INCLUDE_DIR}
         ${DSE_MODELC_LIB_INCLUDE_DIR}
-        ${DSE_CLIB_INCLUDE_DIR}
+ #       ${DSE_CLIB_INCLUDE_DIR}
         ${YAML_SOURCE_DIR}/include
         ./
 )
@@ -180,13 +161,13 @@ add_executable(test_mstep
     ${DSE_MODELC_LIB_MOCK_SOURCE_FILES}
     ${DSE_NETWORK_SOURCE_FILES}
     ${DSE_MODELC_SOURCE_FILES}
-    ${DSE_CLIB_SOURCE_FILES}
+#    ${DSE_CLIB_SOURCE_FILES}
     ${DSE_NETWORK_SOURCE_DIR}/model.c
 )
 target_include_directories(test_mstep
     PRIVATE
         ${DSE_NETWORK_INCLUDE_DIR}
-        ${DSE_CLIB_INCLUDE_DIR}
+#        ${DSE_CLIB_INCLUDE_DIR}
         ${DSE_MODELC_LIB_INCLUDE_DIR}
         ${DSE_MODELC_INCLUDE_DIR}
         ${YAML_SOURCE_DIR}/include
