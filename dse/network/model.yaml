@@ -8,6 +8,18 @@ spec:
       - os: linux
         arch: amd64
         path: lib/network.so
+      - os: linux
+        arch: x86
+        path: lib/network.so
+      - os: linux
+        arch: i386
+        path: lib/network.so
+      - os: windows
+        arch: x64
+        path: bin/network.dll
+      - os: windows
+        arch: x86
+        path: bin/network.dll
   channels:
     - alias: signal_channel
       selectors:

@@ -186,10 +186,15 @@ tasks:
         vars:
           DBCFILE: '{{.DBCFILE}}'
           OUTDIR: '{{.OUTDIR}}'
+          PLATFORM_OS: '{{.PLATFORM_OS}}'
+          PLATFORM_ARCH: '{{.PLATFORM_ARCH}}'
+          MESSAGE_LIB: '{{.MESSAGE_LIB}}'
       - task: gen-network
         vars:
           DBCFILE: '{{.DBCFILE}}'
           OUTDIR: '{{.OUTDIR}}'
+          MESSAGE_LIB: '{{.MESSAGE_LIB}}'
+          FUNCTION_LIB: '{{.FUNCTION_LIB}}'
       - task: patch-network
         vars:
           DBCFILE: '{{.DBCFILE}}'
