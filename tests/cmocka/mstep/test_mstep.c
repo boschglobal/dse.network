@@ -201,7 +201,7 @@ void test_mstep_message_function(void** state)
         };
         simmock_print_scalar_signals(mock, LOG_DEBUG);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
     }
     /* 5.5-10ms - stable, no value change, no Tx*/
     {
@@ -215,7 +215,7 @@ void test_mstep_message_function(void** state)
             };
             simmock_print_scalar_signals(mock, LOG_DEBUG);
             simmock_signal_check(
-                mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+                mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         }
     }
     /* 10.5ms - Set a signal value. */
@@ -230,7 +230,7 @@ void test_mstep_message_function(void** state)
         };
         simmock_print_scalar_signals(mock, LOG_DEBUG);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
     }
     /* 10.5-15ms - stable, no value change, no Tx*/
     {
@@ -244,7 +244,7 @@ void test_mstep_message_function(void** state)
             };
             simmock_print_scalar_signals(mock, LOG_DEBUG);
             simmock_signal_check(
-                mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+                mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         }
     }
 }
