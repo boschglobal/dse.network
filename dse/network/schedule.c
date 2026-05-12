@@ -52,7 +52,7 @@ void network_schedule_tick(Network* n)
     }
     /* Current tick. */
     for (NetworkScheduleItem* nsi = n->schedule_list; nsi && nsi->message;
-         nsi++) {
+        nsi++) {
         if (n->tick == 0) {
         } else {
             /* Decrement the alarm counter. */

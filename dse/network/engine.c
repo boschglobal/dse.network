@@ -400,8 +400,7 @@ int network_marshal_messages_to_signals(
             if (mi->signal->range_func_float(
                     ((float*)mi->message->buffer)[(mi->signal->buffer_offset) /
                                                   sizeof(float)])) {
-                double _v = mi->signal->decode_func_float((
-                    (float*)mi->message
+                double _v = mi->signal->decode_func_float(((float*)mi->message
                         ->buffer)[(mi->signal->buffer_offset) / sizeof(float)]);
                 n->signal_vector[mi->signal_vector_index] = _v;
 

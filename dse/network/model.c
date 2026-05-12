@@ -107,7 +107,7 @@ ModelDesc* model_create(ModelDesc* model)
         log_notice("    %s [frame_id 0x%x, len %d]", nm->name, nm->frame_id,
             nm->buffer_len);
         for (NetworkSignal* sig = nm->signals;
-             sig->name && sig_idx < m->network.signal_count; sig++) {
+            sig->name && sig_idx < m->network.signal_count; sig++) {
             const char* signal_name = m->network.signal_name[sig_idx++];
             log_notice("        %s [%s]", signal_name, sig->name);
         }
