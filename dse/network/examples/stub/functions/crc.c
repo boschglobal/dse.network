@@ -65,7 +65,7 @@ int crc_generate(
     /* CRC calculation. */
     uint8_t* buffer = payload;
     uint8_t  crc = 0;
-    for (uint8_t i = 0; i < payload_len; i++) {
+    for (size_t i = 0; i < payload_len; i++) {
         if (i == inst->position) continue;
         crc += buffer[i];
     }
@@ -131,9 +131,10 @@ int crc_validate(
     /* CRC validation. */
     uint8_t* buffer = payload;
     uint8_t  crc = buffer[inst->position];
-    for (uint8_t i = payload_len; i > 0; --i) {
-        if (i == inst->position) continue;
-        crc -= buffer[i];
+    for (size_t i = payload_len; i > 0; --i) {
+        size_t idx = i - 1;
+        if (idx == inst->position) continue;
+        crc -= buffer[idx];
     }
     if (crc != 0) return EBADMSG;
 
