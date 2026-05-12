@@ -90,6 +90,26 @@ set(DSE_MODELC_LIB_MOCK_SOURCE_FILES
 )
 
 
+# External Project - lua
+# ----------------------
+set(LUA_SOURCE_DIR "$ENV{EXTERNAL_BUILD_DIR}/lua")
+set(LUA_BINARY_DIR "$ENV{EXTERNAL_BUILD_DIR}/lua")
+find_library(LUA_LIB
+    NAMES
+        liblua.a
+    PATHS
+        ${LUA_BINARY_DIR}
+    REQUIRED
+    NO_DEFAULT_PATH
+)
+add_library(lua STATIC IMPORTED GLOBAL)
+set_target_properties(lua
+    PROPERTIES
+        IMPORTED_LOCATION "${LUA_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LUA_BINARY_DIR}"
+)
+
+
 
 # Set the project paths
 # =====================
@@ -185,6 +205,7 @@ target_link_libraries(test_mstep
         -Wl,-Bstatic modelc -Wl,-Bdynamic ${CMAKE_DL_LIBS}
     PRIVATE
         cmocka
+        lua
         dl
         rt
         m

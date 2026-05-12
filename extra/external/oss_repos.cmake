@@ -10,3 +10,4 @@
 set(ExternalProject__YAML__URL       https://github.com/yaml/libyaml/archive/0.2.5.tar.gz)
 set(ExternalProject__CANTOOLS__URL   https://github.com/cantools/cantools/archive/refs/tags/39.4.5.tar.gz)
 set(ExternalProject__DLFCNWIN32__URL https://github.com/dlfcn-win32/dlfcn-win32/archive/refs/tags/v1.3.0.tar.gz)
+set(ExternalProject__LUA__URL        https://github.com/lua/lua/archive/refs/tags/v5.4.8.tar.gz)
