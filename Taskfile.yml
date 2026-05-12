@@ -26,16 +26,16 @@ metadata:
 
 
 vars:
-  # When running from E2E tests (i.e. Docker in Docker), the ENTRYDIR (for
+  # When running from E2E tests (i.e. Docker in Docker), the NETWORK_SIMDIR (for
   # Docker commands) must be set to the host relative path.
-  ENTRYDIR: '{{if .SIM}}{{.ENTRYWORKDIR}}/{{.SIM}}{{else}}{{.PWD}}{{end}}'
+  NETWORK_SIMDIR: '{{if .SIM}}{{.ENTRYWORKDIR}}/{{.SIM}}{{else}}{{.PWD}}{{end}}'
   # Container image specification.
-  REPO: 'https://github.com/boschglobal/dse.network'
-  REGISTRY: ghcr.io/boschglobal
+  NETWORK_REPO: 'https://github.com/boschglobal/dse.network'
+  NETWORK_REGISTRY: ghcr.io/boschglobal
   GCC_IMAGE: ghcr.io/boschglobal/dse-gcc-builder:latest
-  USER:
+  NETWORK_USER:
     sh: id -u
-  GROUP:
+  NETWORK_GROUP:
     sh: id -g
 
 tasks:
@@ -45,13 +45,13 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:info
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
     cmds:
-      - echo ENTRYDIR={{.ENTRYDIR}}
+      - echo NETWORK_SIMDIR={{.NETWORK_SIMDIR}}
       - echo NETWORK_IMAGE={{.NETWORK_IMAGE}}
       - echo PACKAGE_VERSION={{.PACKAGE_VERSION}}
       - echo PLATFORM_ARCH={{.PLATFORM_ARCH}}
-      - echo REPO={{.REPO}}
+      - echo NETWORK_REPO={{.NETWORK_REPO}}
       - echo TAG={{.TAG}}
 
   generate:
@@ -117,7 +117,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.ARXML}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       ARXML: '{{.ARXML | default "ARXML_NOT_SPECIFIED"}}'
       DBCDIR:
         sh: dirname {{.ARXML}}
@@ -126,7 +126,7 @@ tasks:
       MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
       NETOFF_SIGNAL: '{{.NETOFF_SIGNAL | default ""}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} convert-arxml {{.ARXML}} {{.OUTDIR}}
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} convert-arxml {{.ARXML}} {{.OUTDIR}}
       - task: find-dbc
     requires:
       vars: [ARXML, SIGNAL, MIMETYPE]
@@ -141,7 +141,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:generate-{{.ARXML}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
       MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
       ARXML: '{{.ARXML | default "ARXML_NOT_SPECIFIED"}}'
@@ -182,6 +182,7 @@ tasks:
         vars:
           DBCFILE: '{{.DBCFILE}}'
           OUTDIR: '{{.OUTDIR}}'
+          FILTER: '{{.FILTER}}'
       - task: build-message-lib
         vars:
           DBCFILE: '{{.DBCFILE}}'
@@ -195,10 +196,12 @@ tasks:
           OUTDIR: '{{.OUTDIR}}'
           MESSAGE_LIB: '{{.MESSAGE_LIB}}'
           FUNCTION_LIB: '{{.FUNCTION_LIB}}'
+          STYLE: '{{.STYLE | default "snake_case"}}'
       - task: patch-network
         vars:
           DBCFILE: '{{.DBCFILE}}'
           OUTDIR: '{{.OUTDIR}}'
+          FUNCTION_PATCH: '{{.FUNCTION_PATCH}}'
       - task: gen-signalgroup
         vars:
           DBCFILE: '{{.DBCFILE}}'
@@ -218,7 +221,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-code-{{.DBCFILE}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
       DBCNAME:
         sh: basename {{.DBCFILE}} .dbc
@@ -226,7 +229,7 @@ tasks:
       FILTER: '{{if .FILTER}}--filter {{.FILTER}}{{else}}{{end}}'
       CYCLE_TIME: "{{if .CYCLE_TIME}}--cycle_time '{{.CYCLE_TIME}}'{{else}}{{end}}"
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} gen-code
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} gen-code
           {{.DBCFILE}} {{.OUTDIR}}
           {{.FILTER}}
           {{.CYCLE_TIME}}
@@ -256,9 +259,9 @@ tasks:
       ARCH_FLAGS: '{{if eq .PLATFORM_ARCH "x86"}}-mx32{{else}}{{end}}'
       GCC_TOOLCHAIN_PREFIX: '{{if eq .PLATFORM_OS "windows"}}x86_64-w64-mingw32-{{else}}{{end}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.GCC_IMAGE}}
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim -w /sim {{.GCC_IMAGE}}
           {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -c -Wall -Werror -fpic -o {{.OBJECT_FILE}} {{.SOURCE_FILE}}
-      - docker run --rm -v {{.ENTRYDIR}}:/sim -w /sim {{.GCC_IMAGE}}
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim -w /sim {{.GCC_IMAGE}}
           {{.GCC_TOOLCHAIN_PREFIX}}gcc {{.ARCH_FLAGS}} -shared -o {{.MESSAGE_LIB_FILE}} {{.OBJECT_FILE}}
     requires:
       vars: [DBCFILE, OUTDIR]
@@ -274,7 +277,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-network-{{.DBCFILE}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
       DBCNAME:
         sh: basename {{.DBCFILE}} .dbc
@@ -287,14 +290,15 @@ tasks:
       NETOFF_SIGNAL: '{{if .NETOFF_SIGNAL}}--netoff_signal {{.NETOFF_SIGNAL}}{{else}}{{end}}'
       LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
       ANNOTATIONS: '{{if .ANNOTATIONS}}--annotations {{.ANNOTATIONS}}{{else}}{{end}}'
+      STYLE: '{{if .STYLE}}--style {{.STYLE}}{{else}}{{end}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} gen-network
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} gen-network
           --name {{.DBCNAME}}
           --header {{.HEADER_FILE}}
           --network {{.NETWORK_FILE}}
           --metadata {{.METADATA_FILE}}
           --message_lib {{.OUTDIR}}/{{.MESSAGE_LIB}}
-          --style snake_case
+          {{.STYLE}}
           {{.FUNCTION_LIB}}
           {{.NETOFF_SIGNAL}}
           {{.LABELS}}
@@ -314,7 +318,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:patch-network-{{.DBCFILE}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
       NETWORK_FILE: '{{.OUTDIR}}/network.yaml'
@@ -323,7 +327,7 @@ tasks:
       REMOVE_UNKNOWN: '{{if .REMOVE_UNKNOWN}}--remove_unknown{{else}}{{end}}'
     cmds:
       - if test -n '{{.FUNCTION_PATCH}}' || test -n '{{.SIGNAL_PATCH}}' ; then
-          docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} patch-network
+          docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} patch-network
             --network {{.NETWORK_FILE}}
             {{.FUNCTION_PATCH}}
             {{.SIGNAL_PATCH}}
@@ -343,7 +347,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:gen-signalgroup-{{.DBCFILE}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
       MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
       DBCFILE: '{{.DBCFILE | default "DBCFILE_NOT_SPECIFIED"}}'
@@ -354,7 +358,7 @@ tasks:
       SIGGROUP_FILE: '{{.OUTDIR}}/signalgroup.yaml'
       LABELS: '{{if .LABELS}}--labels {{.LABELS}}{{else}}{{end}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} gen-signalgroup
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} gen-signalgroup
           --name {{.DBCNAME}}
           --network {{.NETWORK_FILE}}
           --signalgroup {{.SIGGROUP_FILE}}
@@ -375,12 +379,12 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     label: dse:network:set-mimetype-{{.DBCFILE}}
     vars:
-      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
+      NETWORK_IMAGE: '{{if .NETWORK_IMAGE}}{{.NETWORK_IMAGE}}{{else}}{{.NETWORK_REGISTRY}}/dse-network:{{.TAG | default "latest"}}{{end}}'
       SIGNAL: '{{.SIGNAL | default "SIGNAL_NOT_SPECIFIED"}}'
       MIMETYPE: '{{.MIMETYPE | default "MIMETYPE_NOT_SPECIFIED"}}'
       OUTDIR: '{{.OUTDIR | default "OUTDIR_NOT_SPECIFIED"}}'
     cmds:
-      - docker run --rm -v {{.ENTRYDIR}}:/sim {{.NETWORK_IMAGE}} set-mimetype
+      - docker run --rm -v {{.NETWORK_SIMDIR}}:/sim {{.NETWORK_IMAGE}} set-mimetype
           --output_directory {{.OUTDIR}}
           --signal {{.SIGNAL}}
           --mimetype "{{.MIMETYPE}}"
