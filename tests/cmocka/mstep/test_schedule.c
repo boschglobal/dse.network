@@ -89,7 +89,7 @@ void test_schedule__cycle_time(void** state)
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         simmock_frame_check(
             mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
@@ -118,7 +118,7 @@ void test_schedule__cycle_time(void** state)
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         simmock_frame_check(
             mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
@@ -167,7 +167,7 @@ void test_schedule__signal_change(void** state)
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         simmock_frame_check(
             mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
@@ -196,7 +196,7 @@ void test_schedule__signal_change(void** state)
         simmock_print_network_frames(mock, LOG_DEBUG);
         assert_int_equal(network_model->sv_network->length[0] > 0, true);
         simmock_signal_check(
-            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL);
+            mock, NETWORK_NAME, s_checks, ARRAY_SIZE(s_checks), NULL, NULL);
         simmock_frame_check(
             mock, NETWORK_NAME, NETWORK_SIG, f_checks, ARRAY_SIZE(f_checks));
     }
