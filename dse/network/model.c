@@ -63,7 +63,7 @@ ModelDesc* model_create(ModelDesc* model)
 
     /* Initialise the Network objects. */
     dse_yaml_get_string(
-        m->model.mi->spec, "metadata/network", &m->network.name);
+        m->model.mi->spec, "annotations/network", &m->network.name);
     log_notice("Network: %s", m->network.name);
 
     int rc = network_load(&m->network, m->model.mi);
@@ -85,7 +85,7 @@ ModelDesc* model_create(ModelDesc* model)
         log_error("Searched for signal annotation 'network' with value '%s' on "
                   "network SignalVector.",
             m->network.name);
-        log_error("Check ModelInstance metadata/network (currently: %s)",
+        log_error("Check ModelInstance annotations/network (currently: %s)",
             m->network.name);
         log_error("Check SignalGroup[Network] signal/annotation/network for "
                   "the network signal");

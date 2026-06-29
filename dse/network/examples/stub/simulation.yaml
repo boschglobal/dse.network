@@ -25,7 +25,7 @@ spec:
       uid: 42
       model:
         name: Network
-      metadata:
+      annotations:
         network: stub
       channels:
         - name: signal

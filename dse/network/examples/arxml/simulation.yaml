@@ -28,7 +28,7 @@ spec:
         files:
           - stub/network.yaml
           - stub/signalgroup.yaml
-      metadata:
+      annotations:
         network: stub
       channels:
         - name: signal

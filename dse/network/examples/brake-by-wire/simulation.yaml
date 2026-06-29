@@ -78,7 +78,7 @@ spec:
         files:
           - networks/brake/network.yaml
           - networks/brake/signalgroup.yaml
-      metadata:
+      annotations:
         network: brake
       channels:
         - name: physical
@@ -97,7 +97,7 @@ spec:
         files:
           - networks/vehicle/network.yaml
           - networks/vehicle/signalgroup.yaml
-      metadata:
+      annotations:
         network: vehicle
       channels:
         - name: vehicle
