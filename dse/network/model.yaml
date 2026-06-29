@@ -1,7 +1,7 @@
 ---
 kind: Model
 metadata:
-  name: Network
+  name: dse.network
 spec:
   runtime:
     dynlib:
