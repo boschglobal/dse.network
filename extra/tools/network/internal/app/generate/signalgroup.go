@@ -80,6 +80,7 @@ func (c *GenSignalGroupCommand) generateSignalVector(network *kind.Network) erro
 			Name: stringPtr(c.name),
 			Labels: &kind.Labels{
 				"channel": "signal_vector",
+				"model":   c.name,
 			},
 		},
 	}
@@ -108,6 +109,7 @@ func (c *GenSignalGroupCommand) generateNetworkVector(network *kind.Network) err
 			Name: stringPtr(c.name),
 			Labels: &kind.Labels{
 				"channel": "network_vector",
+				"model":   c.name,
 			},
 			Annotations: &kind.Annotations{
 				"vector_type": "binary",

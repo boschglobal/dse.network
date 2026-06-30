@@ -133,7 +133,7 @@ typedef struct NetworkMessage {
     /* Buffer representing the message struct (intermediate object). */
     void*          buffer;
     size_t         buffer_len;
-    uint8_t        cycle_time_ms;
+    uint16_t        cycle_time_ms;
     /* Payload (object of pack/unpack operations). */
     void*          payload;
     uint8_t        payload_len;
