@@ -133,7 +133,7 @@ typedef struct NetworkMessage {
     /* Buffer representing the message struct (intermediate object). */
     void*          buffer;
     size_t         buffer_len;
-    uint16_t        cycle_time_ms;
+    uint16_t       cycle_time_ms;
     /* Payload (object of pack/unpack operations). */
     void*          payload;
     uint8_t        payload_len;
@@ -168,8 +168,9 @@ typedef struct Network {
     YamlNode*            doc;
     NetworkMessage*      messages;  // NULL terminated list.
     /* Shared libraries representing the Network implementation. */
-    const char*          message_lib_path;
-    const char*          function_lib_path;
+    const char*          sim_path;
+    char*                message_lib_path;
+    char*                function_lib_path;
     void*                message_lib_handle;
     void*                function_lib_handle;
     /* Marshalling items. */

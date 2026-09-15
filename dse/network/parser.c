@@ -10,6 +10,8 @@
 #include <dse/logger.h>
 #include <dse/network/network.h>
 #include <dse/modelc/schema.h>
+#include <dse/modelc/runtime.h>
+#include <dse/clib/util/strings.h>
 #include <dse/clib/util/yaml.h>
 
 
@@ -283,16 +285,29 @@ static void* _parse_messages(ModelInstanceSpec* mi, SchemaObject* object)
 
 static int _network_match_handler(ModelInstanceSpec* mi, SchemaObject* object)
 {
+    unsigned int value = 0;
+    const char*  message_lib_path = NULL;
+    const char*  function_lib_path = NULL;
+
     Network* n = object->data;
     n->doc = object->doc;
-    unsigned int value = 0;
+    n->sim_path = (mi->model_desc && mi->model_desc->sim)
+                      ? mi->model_desc->sim->sim_path
+                      : NULL;
+
     /* Parse metadata. */
     dse_yaml_get_string(
-        n->doc, "metadata/annotations/message_lib", &n->message_lib_path);
+        n->doc, "metadata/annotations/message_lib", &message_lib_path);
     dse_yaml_get_string(
-        n->doc, "metadata/annotations/function_lib", &n->function_lib_path);
+        n->doc, "metadata/annotations/function_lib", &function_lib_path);
     dse_yaml_get_string(
         n->doc, "metadata/annotations/netoff_signal", &n->netoff_signal);
+
+    /* dse_path_cat() always return a new allocated string,
+        if one parameter is NULL, it returns the other only the other one. */
+    n->message_lib_path = dse_path_cat(n->sim_path, message_lib_path);
+    n->function_lib_path = dse_path_cat(n->sim_path, function_lib_path);
+
     log_debug("Network Message Lib Path: %s", n->message_lib_path);
     log_debug("Network Function Lib Path: %s", n->function_lib_path);
     log_debug("Network Off Signal: %s", n->netoff_signal);
@@ -376,6 +391,9 @@ int network_unload_parser(Network* n)
         _free_functions(nm->decode_functions);
     }
     if (n->messages) free(n->messages);
+
+    free(n->message_lib_path);
+    free(n->function_lib_path);
 
     return 0;
 }
