@@ -4,25 +4,12 @@
 
 ###############
 ## Docker Images.
-DSE_CDOCGEN_IMAGE ?= dse-cdocgen:latest
-DSE_PLANTUML_IMAGE ?= dse-plantuml:latest
+DSE_CDOCGEN_IMAGE ?= ghcr.io/boschglobal/dse-cdocgen:latest
+DSE_PLANTUML_IMAGE ?= ghcr.io/boschglobal/dse-plantuml:latest
 
 
 ###############
 ## Document Modules
-
-# File "_index.md"
-define _INDEX_MD_FILE =
----
-title: "DSE Network API Reference"
-linkTitle: "Network"
-weight: 800
----
-
-## DSE Network API Reference
-endef
-export _INDEX_MD_FILE
-DOC_OUTPUT_index := doc/content/apis/network/_index.md
 
 # Module "network"
 DOC_INPUT_network := dse/network/network.h
@@ -43,12 +30,6 @@ DOC_TITLE_function := "Example Network Function API Reference"
 # Targets
 DOC_C_MODULES := network function
 
-
-.PHONY: index
-index:
-	@cd ..; mkdir -p $$(dirname $(DOC_OUTPUT_index))
-	@cd ..; echo "$$_INDEX_MD_FILE" > $(DOC_OUTPUT_index)
-
 .PHONY: $(DOC_C_MODULES)
 $(DOC_C_MODULES):
 	@cd ..; mkdir -p $$(dirname $(DOC_OUTPUT_$@))
@@ -68,4 +49,4 @@ $(DOC_C_MODULES):
 			-tpng  $$(basename $(DOC_OUTPUT_$@))
 
 .PHONY: generate
-generate: index $(DOC_C_MODULES)
+generate: $(DOC_C_MODULES)

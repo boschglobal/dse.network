@@ -1,15 +1,13 @@
 ---
 title: "Model - Network Model"
 linkTitle: "Network"
-weight: 600
 tags:
 - Network
 - ModelC
 - Workflow
 - Model
-github_repo: "https://github.com/boschglobal/dse.fmi"
+github_repo: "https://github.com/boschglobal/dse.network"
 github_subdir: "doc"
-draft: true
 ---
 
 ## Synposis
@@ -19,17 +17,15 @@ draft: true
 
 ### Structure
 
-```
-```
-
 ## Transformations
 
 
 
 ## Simulation (DSE)
 
-{{readFile "example.md"}}
-
+```md
+--8<-- "user/models/network/example.md"
+```
 
 ## Workflow
 
@@ -39,4 +35,6 @@ draft: true
 task generate-network
 ```
 
-{{readFile "task.md"}}
+```md
+--8<-- "user/models/network/task.md"
+```

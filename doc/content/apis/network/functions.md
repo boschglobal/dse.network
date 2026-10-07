@@ -1,6 +1,6 @@
 ---
-title: Example Network Function API Reference
 linkTitle: Functions
+title: Example Network Function API Reference
 ---
 ## Example Network Functions
 
