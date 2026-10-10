@@ -57,7 +57,7 @@ int test_network_setup(void** state)
         NULL,
     };
     for (const char** _ = yaml_files; *_ != NULL; _++) {
-        doc_list = dse_yaml_load_file(*_, doc_list);
+        doc_list = dse_yaml_load_file(NULL, *_, doc_list);
     }
     mock->model_instance->yaml_doc_list = doc_list;
 
