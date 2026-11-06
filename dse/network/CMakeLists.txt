@@ -40,9 +40,9 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 # External Project - DSE C Lib
 # ----------------------------
 FetchContent_Declare(dse_clib
-    URL                 ${ExternalProject__CLIB__URL}
-    HTTP_USERNAME       ${ExternalProject__CLIB__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__CLIB__PASSWORD}
+    URL                 $ENV{DSE_CLIB_URL}
+    HTTP_USERNAME       $ENV{DSE_CLIB_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_CLIB_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.clib"
 )
 FetchContent_MakeAvailable(dse_clib)
@@ -53,47 +53,30 @@ set(DSE_CLIB_INCLUDE_DIR "${DSE_CLIB_SOURCE_DIR}/..")
 # External Project - DSE ModelC
 # -----------------------------
 FetchContent_Declare(dse_modelc
-    URL                 ${ExternalProject__MODELC__URL}
-    HTTP_USERNAME       ${ExternalProject__MODELC__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__MODELC__PASSWORD}
+    URL                 $ENV{DSE_MODELC_URL}
+    HTTP_USERNAME       $ENV{DSE_MODELC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_MODELC_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.modelc"
 )
 FetchContent_MakeAvailable(dse_modelc)
 set(DSE_MODELC_SOURCE_DIR ${dse_modelc_SOURCE_DIR}/dse/modelc)
 
 
+# External Projects (from ModelC)
+# =================
+include(${dse_modelc_SOURCE_DIR}/extra/external/dlfcnwin32.cmake)
+
+
 # External Project - DSE ModelC LIB
 # ---------------------------------
 FetchContent_Declare(dse_modelc_lib
-    URL                 ${ExternalProject__MODELC_LIB__URL}
-    HTTP_USERNAME       ${ExternalProject__MODELC_LIB__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__MODELC_LIB__PASSWORD}
+    URL                 $ENV{DSE_MODELC_LIB_URL}
+    HTTP_USERNAME       $ENV{DSE_MODELC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_MODELC_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.modelc.lib"
 )
 FetchContent_MakeAvailable(dse_modelc_lib)
 set(DSE_MODELC_INCLUDE_DIR "${dse_modelc_lib_SOURCE_DIR}/include")
-
-
-# External Project - dlfcn-win32
-# ------------------------------
-if(WIN32)
-set(DLFCNWIN32_SOURCE_DIR "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32/src")
-set(DLFCNWIN32_BINARY_DIR "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32-build/lib")
-find_library(DLFCNWIN32_LIB
-    NAMES
-        libdl.a
-    PATHS
-        ${DLFCNWIN32_BINARY_DIR}
-    REQUIRED
-    NO_DEFAULT_PATH
-)
-add_library(dl STATIC IMPORTED GLOBAL)
-set_target_properties(dl
-    PROPERTIES
-        IMPORTED_LOCATION "${DLFCNWIN32_LIB}"
-        INTERFACE_INCLUDE_DIRECTORIES "${DLFCNWIN32_SOURCE_DIR}"
-)
-endif()
 
 
 
@@ -125,7 +108,7 @@ target_link_directories(network
 target_link_libraries(network
     PRIVATE
         $<$<BOOL:${WIN32}>:modelc>
-        $<$<BOOL:${WIN32}>:dl>
+        $<$<BOOL:${WIN32}>:dse_external_dl>
 )
 set(network_link_lib network)
 install(TARGETS network)
@@ -146,7 +129,7 @@ install(
         licenses
 )
 install(
-    DIRECTORY
+    FILES
         ${CMAKE_BINARY_DIR}/compile_commands.json
     DESTINATION
         doc

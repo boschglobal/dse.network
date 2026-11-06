@@ -30,32 +30,12 @@ list(APPEND C_CXX_WARNING_FLAGS
 add_compile_options(${C_CXX_WARNING_FLAGS})
 
 
-# External Project - yaml
-# -----------------------
-set(YAML_SOURCE_DIR "$ENV{EXTERNAL_BUILD_DIR}/yaml")
-set(YAML_BINARY_DIR "$ENV{EXTERNAL_BUILD_DIR}/yaml")
-find_library(YAML_LIB
-    NAMES
-        libyaml.a
-    PATHS
-        ${YAML_BINARY_DIR}
-    REQUIRED
-    NO_DEFAULT_PATH
-)
-add_library(yaml STATIC IMPORTED GLOBAL)
-set_target_properties(yaml
-    PROPERTIES
-        IMPORTED_LOCATION "${YAML_LIB}"
-        INTERFACE_INCLUDE_DIRECTORIES "${YAML_BINARY_DIR}"
-)
-
-
 # External Project - DSE ModelC
 # -----------------------------
 FetchContent_Declare(dse_modelc
-    URL                 ${ExternalProject__MODELC__URL}
-    HTTP_USERNAME       ${ExternalProject__MODELC__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__MODELC__PASSWORD}
+    URL                 $ENV{DSE_MODELC_URL}
+    HTTP_USERNAME       $ENV{DSE_MODELC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_MODELC_URL_TOKEN}
     SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.modelc"
 )
 FetchContent_MakeAvailable(dse_modelc)
@@ -64,6 +44,27 @@ set(DSE_MODELC_SOURCE_FILES
     ${DSE_MODELC_SOURCE_DIR}/model/schema.c
 )
 set(DSE_MODELC_INCLUDE_DIR "${DSE_MODELC_SOURCE_DIR}/../..")
+
+
+# External Projects (from ModelC)
+# =================
+set(DSE_MODELC_EXTERNAL_DIR ${dse_modelc_SOURCE_DIR}/extra/external)
+include(${DSE_MODELC_EXTERNAL_DIR}/yaml.cmake)
+include(${DSE_MODELC_EXTERNAL_DIR}/lua.cmake)
+include(${DSE_MODELC_EXTERNAL_DIR}/dlfcnwin32.cmake)
+
+
+# External Project - DSE Network Codec
+# ------------------------------------
+FetchContent_Declare(dse_ncodec
+    URL                 $ENV{DSE_NCODEC_URL}
+    HTTP_USERNAME       $ENV{DSE_NCODEC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_NCODEC_URL_TOKEN}
+    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.ncodec"
+    SOURCE_SUBDIR       dse
+)
+FetchContent_MakeAvailable(dse_ncodec)
+set(DSE_NCODEC_INCLUDE_DIR ${dse_ncodec_SOURCE_DIR})
 
 
 # External Project - DSE ModelC Library (for linking to mstep)
@@ -87,26 +88,6 @@ set(DSE_MODELC_LIB_INCLUDE_DIR "${MODELC_BINARY_DIR}/include")
 set(DSE_MODELC_LIB_MOCK_SOURCE_DIR "${MODELC_BINARY_DIR}/mocks")
 set(DSE_MODELC_LIB_MOCK_SOURCE_FILES
     ${DSE_MODELC_LIB_MOCK_SOURCE_DIR}/simmock.c
-)
-
-
-# External Project - lua
-# ----------------------
-set(LUA_SOURCE_DIR "$ENV{EXTERNAL_BUILD_DIR}/lua")
-set(LUA_BINARY_DIR "$ENV{EXTERNAL_BUILD_DIR}/lua")
-find_library(LUA_LIB
-    NAMES
-        liblua.a
-    PATHS
-        ${LUA_BINARY_DIR}
-    REQUIRED
-    NO_DEFAULT_PATH
-)
-add_library(lua STATIC IMPORTED GLOBAL)
-set_target_properties(lua
-    PROPERTIES
-        IMPORTED_LOCATION "${LUA_LIB}"
-        INTERFACE_INCLUDE_DIRECTORIES "${LUA_BINARY_DIR}"
 )
 
 
@@ -152,7 +133,6 @@ target_include_directories(test_network
         ${DSE_MODELC_INCLUDE_DIR}
         ${DSE_MODELC_LIB_INCLUDE_DIR}
  #       ${DSE_CLIB_INCLUDE_DIR}
-        ${YAML_SOURCE_DIR}/include
         ./
 )
 target_compile_definitions(test_network
@@ -163,9 +143,10 @@ target_link_libraries(test_network
     PUBLIC
         -Wl,-Bstatic modelc -Wl,-Bdynamic ${CMAKE_DL_LIBS}
     PRIVATE
+        ab-codec
         cmocka
-        yaml
-        dl
+        dse_external_yaml
+        dse_external_dl
         m
 )
 install(TARGETS test_network)
@@ -190,7 +171,6 @@ target_include_directories(test_mstep
 #        ${DSE_CLIB_INCLUDE_DIR}
         ${DSE_MODELC_LIB_INCLUDE_DIR}
         ${DSE_MODELC_INCLUDE_DIR}
-        ${YAML_SOURCE_DIR}/include
         ./
 )
 target_compile_definitions(test_mstep
@@ -204,9 +184,11 @@ target_link_libraries(test_mstep
     PUBLIC
         -Wl,-Bstatic modelc -Wl,-Bdynamic ${CMAKE_DL_LIBS}
     PRIVATE
+        ab-codec
         cmocka
-        lua
-        dl
+        dse_external_yaml
+        dse_external_lua
+        dse_external_dl
         rt
         m
 )

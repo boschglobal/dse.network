@@ -20,7 +20,7 @@ add_compile_options(-Wall -W -Wwrite-strings -Wno-missing-field-initializers)
 # Load URLs
 # =========
 include(oss_repos.cmake)
-if($ENV{REPO_MIRRORS})
+if(DEFINED ENV{REPO_MIRRORS})
     include($ENV{REPO_MIRRORS} OPTIONAL)
 endif()
 
@@ -67,20 +67,21 @@ FetchContent_Declare(dse_modelc_lib
 )
 FetchContent_MakeAvailable(dse_modelc_lib)
 
-
-# Lib YAML
-# --------
-ExternalProject_Add(yaml
-    URL                 ${ExternalProject__YAML__URL}
-    HTTP_USERNAME       ${ExternalProject__YAML__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__YAML__PASSWORD}
-    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/yaml"
-    BINARY_DIR          "$ENV{EXTERNAL_BUILD_DIR}/yaml"
-    CMAKE_ARGS
-        -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-        -DBUILD_SHARED_LIBS=OFF
-    INSTALL_COMMAND     ""
+# DSE Network Codec
+# -----------------
+FetchContent_Declare(dse_ncodec
+    URL                 $ENV{DSE_NCODEC_URL}
+    HTTP_USERNAME       $ENV{DSE_NCODEC_URL_USER}
+    HTTP_PASSWORD       $ENV{DSE_NCODEC_URL_TOKEN}
+    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dse.ncodec"
 )
+FetchContent_MakeAvailable(dse_ncodec)
+
+
+# Shared Externals (from ModelC)
+# ----------------
+include(${dse_modelc_SOURCE_DIR}/extra/external/yaml.cmake)
+include(${dse_modelc_SOURCE_DIR}/extra/external/dlfcnwin32.cmake)
 
 
 # CAN Tools
@@ -94,59 +95,25 @@ FetchContent_Declare(cantools
 FetchContent_MakeAvailable(cantools)
 
 
-# dlfcn-win32
-# -----------
-if(NOT WIN32)
-    set(DLFCNWIN32_BUILD_COMMAND "")
-endif()
-ExternalProject_Add(dlfcnwin32
-    URL                 ${ExternalProject__DLFCNWIN32__URL}
-    HTTP_USERNAME       ${ExternalProject__DLFCNWIN32__USERNAME}
-    HTTP_PASSWORD       ${ExternalProject__DLFCNWIN32__PASSWORD}
-    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32"
-    BINARY_DIR          "$ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32-build"
-    CMAKE_ARGS
-        -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-        -DBUILD_SHARED_LIBS=OFF
-        -DBUILD_TESTS=OFF
-    BUILD_COMMAND       ${DLFCNWIN32_BUILD_COMMAND}
-    INSTALL_COMMAND     ""
-)
-
-
-# Lua
-# ---
-ExternalProject_Add(lua
-    URL                 ${ExternalProject__LUA__URL}
-    SOURCE_DIR          "$ENV{EXTERNAL_BUILD_DIR}/lua"
-    BINARY_DIR          "$ENV{EXTERNAL_BUILD_DIR}/lua"
-    PATCH_COMMAND       ${CMAKE_COMMAND} -E copy
-                        ${CMAKE_CURRENT_SOURCE_DIR}/lua_makefile
-                        <SOURCE_DIR>/makefile
-    CONFIGURE_COMMAND   ""
-    BUILD_COMMAND       make
-                        CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                        CC=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND     ""
-)
-
-
 # OSS Target
 # ==========
 add_custom_target(oss)
+
 function(oss_copy src dst)
+    if(TARGET ${src})
+        add_dependencies(oss ${src}-download)
+        ExternalProject_Get_Property(${src} SOURCE_DIR)
+        set(src ${SOURCE_DIR})
+    endif()
     add_custom_command(TARGET oss PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${src}"
             "../../../dse/__oss__/${dst}"
     )
 endfunction()
-add_dependencies(oss
-    dlfcnwin32-download
-    yaml-download
-)
-oss_copy($ENV{EXTERNAL_BUILD_DIR}/dse.clib      boschglobal/dse.clib)
-oss_copy($ENV{EXTERNAL_BUILD_DIR}/dse.modelc    boschglobal/dse.modelc)
-oss_copy($ENV{EXTERNAL_BUILD_DIR}/cantools      cantools/cantools)
-oss_copy($ENV{EXTERNAL_BUILD_DIR}/dlfcnwin32    dlfcn-win32/dlfcn-win32)
-oss_copy($ENV{EXTERNAL_BUILD_DIR}/yaml          yaml/libyaml)
+oss_copy(${dse_clib_SOURCE_DIR}                 boschglobal/dse.clib)
+oss_copy(${dse_modelc_SOURCE_DIR}               boschglobal/dse.modelc)
+oss_copy(${dse_ncodec_SOURCE_DIR}               boschglobal/dse.ncodec)
+oss_copy(${cantools_SOURCE_DIR}                 cantools/cantools)
+oss_copy(dse_external_dl_build                  dlfcn-win32/dlfcn-win32)
+oss_copy(dse_external_yaml_build                yaml/libyaml)
